@@ -52,7 +52,10 @@ export function ChatWindow({ slug, agentName, company, greeting }: ChatWindowPro
   const [messages, setMessages] = useState<Message[]>([
     { role: 'assistant', content: greeting },
   ])
-  const [apiMessages, setApiMessages] = useState<Anthropic.MessageParam[]>([])
+  // El saludo se pasa como contexto a la API para que el modelo sepa que ya se presentó
+  const [apiMessages, setApiMessages] = useState<Anthropic.MessageParam[]>([
+    { role: 'assistant', content: greeting },
+  ])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
