@@ -12,6 +12,7 @@ interface ChatWindowProps {
   slug:      string
   agentName: string
   company:   string
+  greeting:  string
 }
 
 function MessageBubble({ msg }: { msg: Message }) {
@@ -47,66 +48,23 @@ function TypingIndicator() {
   )
 }
 
-export function ChatWindow({ slug, agentName, company }: ChatWindowProps) {
-  const [messages, setMessages] = useState<Message[]>([])
+export function ChatWindow({ slug, agentName, company, greeting }: ChatWindowProps) {
+  const [messages, setMessages] = useState<Message[]>([
+    { role: 'assistant', content: greeting },
+  ])
   const [apiMessages, setApiMessages] = useState<Anthropic.MessageParam[]>([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
-  const [initialized, setInitialized] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
 
-  // Scroll to bottom on new messages
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages, loading])
 
-  // Get initial greeting from agent (with 1 retry on failure)
   useEffect(() => {
-    if (initialized) return
-    setInitialized(true)
-
-    async function fetchGreeting(): Promise<string | null> {
-      const res = await fetch(`/api/chat/${slug}`, {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ message: 'hola', messages: [] }),
-      })
-      if (!res.ok) return null
-      const data = await res.json()
-      return data.response ?? null
-    }
-
-    async function getGreeting() {
-      setLoading(true)
-      try {
-        let response = await fetchGreeting()
-        if (!response) {
-          // single retry after brief delay
-          await new Promise(r => setTimeout(r, 1500))
-          response = await fetchGreeting()
-        }
-        if (response) {
-          setMessages([{ role: 'assistant', content: response }])
-        } else {
-          setMessages([{
-            role:    'assistant',
-            content: `Hola, soy ${agentName} de ${company}. ¿En qué puedo ayudarte hoy?`,
-          }])
-        }
-      } catch {
-        setMessages([{
-          role:    'assistant',
-          content: `Hola, soy ${agentName} de ${company}. ¿En qué puedo ayudarte hoy?`,
-        }])
-      } finally {
-        setLoading(false)
-        inputRef.current?.focus()
-      }
-    }
-
-    getGreeting()
-  }, [slug, agentName, company, initialized])
+    inputRef.current?.focus()
+  }, [])
 
   async function sendMessage(text: string) {
     if (!text.trim() || loading) return
@@ -123,9 +81,7 @@ export function ChatWindow({ slug, agentName, company }: ChatWindowProps) {
         body:    JSON.stringify({ message: text, messages: apiMessages }),
       })
 
-      if (!res.ok) {
-        throw new Error(`HTTP ${res.status}`)
-      }
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
 
       const data = await res.json()
       setMessages(prev => [...prev, { role: 'assistant', content: data.response }])

@@ -17,12 +17,16 @@ export default async function CotizarPage({
     notFound()
   }
 
+  const greeting = portal.custom_greeting
+    ?? `Hola, soy ${portal.agent_name} de ${portal.company_name}. ¿En qué te puedo ayudar?`
+
   return (
     <div className="flex flex-col h-screen bg-white">
       <ChatWindow
         slug={slug}
         agentName={portal.agent_name}
         company={portal.company_name}
+        greeting={greeting}
       />
     </div>
   )
