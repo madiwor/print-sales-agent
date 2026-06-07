@@ -61,23 +61,38 @@ export function ChatWindow({ slug, agentName, company }: ChatWindowProps) {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages, loading])
 
-  // Get initial greeting from agent
+  // Get initial greeting from agent (with 1 retry on failure)
   useEffect(() => {
     if (initialized) return
     setInitialized(true)
 
+    async function fetchGreeting(): Promise<string | null> {
+      const res = await fetch(`/api/chat/${slug}`, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ message: 'hola', messages: [] }),
+      })
+      if (!res.ok) return null
+      const data = await res.json()
+      return data.response ?? null
+    }
+
     async function getGreeting() {
       setLoading(true)
       try {
-        const res = await fetch(`/api/chat/${slug}`, {
-          method:  'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body:    JSON.stringify({ message: 'hola', messages: [] }),
-        })
-        const data = await res.json()
-        if (data.response) {
-          setMessages([{ role: 'assistant', content: data.response }])
-          setApiMessages(data.messages)
+        let response = await fetchGreeting()
+        if (!response) {
+          // single retry after brief delay
+          await new Promise(r => setTimeout(r, 1500))
+          response = await fetchGreeting()
+        }
+        if (response) {
+          setMessages([{ role: 'assistant', content: response }])
+        } else {
+          setMessages([{
+            role:    'assistant',
+            content: `Hola, soy ${agentName} de ${company}. ¿En qué puedo ayudarte hoy?`,
+          }])
         }
       } catch {
         setMessages([{
