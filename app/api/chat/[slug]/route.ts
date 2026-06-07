@@ -61,7 +61,13 @@ export async function POST(
       response = await anthropic.messages.create({
         model:   MODEL,
         max_tokens: MAX_TOKENS,
-        system:  systemPrompt,
+        system: [
+          {
+            type: 'text',
+            text: systemPrompt,
+            cache_control: { type: 'ephemeral' },
+          },
+        ],
         messages,
         tools:   CLIENT_TOOLS,
       })
