@@ -17,7 +17,11 @@ const MAX_TOKENS          = 1000
 const MAX_TOOL_ITERATIONS = 10
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
-const openai    = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+let _openai: OpenAI | null = null
+function getOpenAI() {
+  if (!_openai) _openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+  return _openai
+}
 
 // ---------------------------------------------------------------------------
 // OpenAI tool definition (same schema, different wrapper format)
@@ -118,7 +122,7 @@ async function runOpenAILoop(
   while (iterations < MAX_TOOL_ITERATIONS) {
     iterations++
 
-    const response = await openai.chat.completions.create({
+    const response = await getOpenAI().chat.completions.create({
       model:      OPENAI_MODEL,
       max_tokens: MAX_TOKENS,
       messages:   oaiMessages,
