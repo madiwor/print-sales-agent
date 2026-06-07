@@ -22,7 +22,7 @@ Portal de ventas B2B white-label para la industria gráfica. Los compradores des
 | Estilos | Tailwind CSS + shadcn/ui |
 | Base de datos | Supabase (PostgreSQL + Auth + RLS) |
 | Deploy | Vercel |
-| IA | Claude API — claude-sonnet-4-20250514 |
+| IA | Claude API — claude-sonnet-4-6 |
 | Email | Resend |
 
 ## URLs

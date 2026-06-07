@@ -2,7 +2,7 @@
 
 ## Modelo
 
-`claude-sonnet-4-20250514` vía Anthropic SDK.
+`claude-sonnet-4-6` vía Anthropic SDK.
 
 ## Dos modos
 
