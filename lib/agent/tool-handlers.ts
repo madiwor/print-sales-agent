@@ -30,36 +30,75 @@ const MOCK_PORTAL: PortalInfo = {
   },
 }
 
-function checkFeasibilityLogic(specs: Record<string, unknown>): FeasibilityResult {
+const NYSSA_PORTAL: PortalInfo = {
+  company_name:   'Nyssa',
+  agent_name:     'Sofía',
+  agent_language: 'es',
+  industry:       'etiquetas',
+  description:    'Con más de 20 años de trayectoria, Nyssa es líder en soluciones de identificación. Fabricamos etiquetas autoadhesivas personalizadas con impresión flexográfica e impresión digital full color UV. Trabajamos con todo tipo de materiales autoadhesivos para todas las industrias: retail, laboratorios, alimentos, farmacéutica, química, electrónica, logística e industria automotriz. Entregamos en hojas o rollos. También desarrollamos aplicaciones especiales y troquelados de seguridad.',
+  contact_email:  'info@nyssa.com.ar',
+  contact_phone:  '54-11-4756-6718',
+  materials: [
+    { name: 'Papel ilustración', slug: 'papel-ilustracion', description: 'Papel blanco satinado, ideal para etiquetas de alta calidad visual.' },
+    { name: 'Papel kraft', slug: 'papel-kraft', description: 'Look artesanal y natural. Ideal para productos orgánicos y gourmet.' },
+    { name: 'Papel cartulina', slug: 'papel-cartulina', description: 'Mayor rigidez. Ideal para etiquetas de colgar y envases.' },
+    { name: 'Papel fluorescente', slug: 'papel-fluorescente', description: 'Alta visibilidad. Ideal para señalización y promociones.' },
+    { name: 'BOPP blanco', slug: 'bopp-blanco', description: 'Film plástico blanco, resistente a humedad. Ideal para productos de limpieza y cosmética.' },
+    { name: 'BOPP transparente', slug: 'bopp-transparente', description: 'Film transparente, look "sin etiqueta". Ideal para frascos de vidrio.' },
+    { name: 'VOID seguridad blanco', slug: 'void-seguridad-blanco', description: 'Etiqueta de seguridad que deja marca al ser removida.' },
+    { name: 'VOID seguridad plata', slug: 'void-seguridad-plata', description: 'Etiqueta de seguridad metálica que deja marca al ser removida.' },
+  ],
+  finishes: [
+    { name: 'Barniz UV', slug: 'barniz-uv', description: 'Protección y brillo intenso sobre la impresión.' },
+    { name: 'Impresión digital full color', slug: 'digital-full-color', description: 'Full color CMYK, ideal para tiradas cortas y diseños complejos.' },
+    { name: 'Troquelado especial', slug: 'troquelado-especial', description: 'Cualquier forma personalizada.' },
+    { name: 'Troquelado de seguridad', slug: 'troquelado-seguridad', description: 'Cortes de seguridad que dificultan la remoción sin evidencia.' },
+  ],
+  capabilities: {
+    min_quantity:     0,
+    max_width_mm:     320,
+    max_colors:       8,
+    print_types:      ['Flexografía', 'Digital UV'],
+    ships_nationwide: true,
+    lead_time_days:   7,
+  },
+}
+
+function getPortal(slug: string): PortalInfo {
+  if (slug === 'nyssa') return NYSSA_PORTAL
+  return MOCK_PORTAL
+}
+
+function checkFeasibilityLogic(specs: Record<string, unknown>, portal: PortalInfo): FeasibilityResult {
   const issues: string[] = []
 
   const quantity = specs.quantity as number | undefined
-  if (quantity !== undefined && quantity < MOCK_PORTAL.capabilities.min_quantity) {
+  if (quantity !== undefined && portal.capabilities.min_quantity > 0 && quantity < portal.capabilities.min_quantity) {
     issues.push(
-      `El tiraje mínimo es ${MOCK_PORTAL.capabilities.min_quantity} unidades. Tu pedido es de ${quantity}.`
+      `El tiraje mínimo es ${portal.capabilities.min_quantity} unidades. Tu pedido es de ${quantity}.`
     )
   }
 
   const widthMm = specs.width_mm as number | undefined
-  if (widthMm !== undefined && widthMm > MOCK_PORTAL.capabilities.max_width_mm) {
+  if (widthMm !== undefined && widthMm > portal.capabilities.max_width_mm) {
     issues.push(
-      `El ancho máximo de impresión es ${MOCK_PORTAL.capabilities.max_width_mm} mm. Tu etiqueta mide ${widthMm} mm de ancho.`
+      `El ancho máximo de impresión es ${portal.capabilities.max_width_mm} mm. Tu etiqueta mide ${widthMm} mm de ancho.`
     )
   }
 
   const colors = specs.colors as number | undefined
-  if (colors !== undefined && colors > MOCK_PORTAL.capabilities.max_colors) {
+  if (colors !== undefined && colors > portal.capabilities.max_colors) {
     issues.push(
-      `El máximo de colores es ${MOCK_PORTAL.capabilities.max_colors}. Solicitás ${colors} colores.`
+      `El máximo de colores es ${portal.capabilities.max_colors}. Solicitás ${colors} colores.`
     )
   }
 
   const material = specs.material as string | undefined
   if (material) {
-    const materialExists = MOCK_PORTAL.materials.some(m => m.slug === material || m.name.toLowerCase() === material.toLowerCase())
+    const materialExists = portal.materials.some(m => m.slug === material || m.name.toLowerCase() === material.toLowerCase())
     if (!materialExists) {
       issues.push(
-        `El material "${material}" no está en el catálogo. Materiales disponibles: ${MOCK_PORTAL.materials.map(m => m.name).join(', ')}.`
+        `El material "${material}" no está en el catálogo. Materiales disponibles: ${portal.materials.map(m => m.name).join(', ')}.`
       )
     }
   }
@@ -72,22 +111,24 @@ export async function handleTool(
   toolInput: Record<string, unknown>,
   _context:  ToolContext
 ): Promise<unknown> {
+  const portal = getPortal(_context.converterSlug)
+
   switch (toolName) {
     case 'get_portal_info':
-      return MOCK_PORTAL
+      return portal
 
     case 'get_available_materials':
-      return MOCK_PORTAL.materials
+      return portal.materials
 
     case 'get_available_finishes':
-      return MOCK_PORTAL.finishes
+      return portal.finishes
 
     case 'get_capabilities':
-      return MOCK_PORTAL.capabilities
+      return portal.capabilities
 
     case 'check_feasibility': {
       const specs = (toolInput.specs ?? {}) as Record<string, unknown>
-      return checkFeasibilityLogic(specs)
+      return checkFeasibilityLogic(specs, portal)
     }
 
     case 'create_rfq_draft': {

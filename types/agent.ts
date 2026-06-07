@@ -5,9 +5,15 @@ export interface ToolContext {
   rfqId?: string
 }
 
+export interface Lead {
+  name:  string
+  email: string
+}
+
 export interface ChatRequest {
   message: string
   messages?: Anthropic.MessageParam[]
+  lead?: Lead
 }
 
 export interface ChatResponse {

@@ -13,6 +13,8 @@ interface ChatWindowProps {
   agentName: string
   company:   string
   greeting:  string
+  lead:      { name: string; email: string }
+  accentColor?: string
 }
 
 function MessageBubble({ msg }: { msg: Message }) {
@@ -48,7 +50,7 @@ function TypingIndicator() {
   )
 }
 
-export function ChatWindow({ slug, agentName, company, greeting }: ChatWindowProps) {
+export function ChatWindow({ slug, agentName, company, greeting, lead, accentColor = '#171717' }: ChatWindowProps) {
   const [messages, setMessages] = useState<Message[]>([
     { role: 'assistant', content: greeting },
   ])
@@ -81,7 +83,7 @@ export function ChatWindow({ slug, agentName, company, greeting }: ChatWindowPro
       const res = await fetch(`/api/chat/${slug}`, {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ message: text, messages: apiMessages }),
+        body:    JSON.stringify({ message: text, messages: apiMessages, lead }),
       })
 
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
@@ -154,10 +156,10 @@ export function ChatWindow({ slug, agentName, company, greeting }: ChatWindowPro
         <button
           type="submit"
           disabled={loading || !input.trim()}
-          className="rounded-xl bg-neutral-900 text-white px-4 py-2 text-sm font-medium
-            hover:bg-neutral-700 active:bg-neutral-800
+          className="rounded-xl text-white px-4 py-2 text-sm font-medium
             disabled:opacity-40 disabled:cursor-not-allowed
             transition-colors flex-shrink-0"
+          style={{ backgroundColor: accentColor }}
         >
           Enviar
         </button>

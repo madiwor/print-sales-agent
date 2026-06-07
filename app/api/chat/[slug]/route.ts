@@ -42,6 +42,19 @@ async function getPortalInfo(slug: string): Promise<PortalInfo> {
   return (await handleTool('get_portal_info', {}, { converterSlug: slug })) as PortalInfo
 }
 
+async function verifyTurnstile(token: string): Promise<boolean> {
+  const secret = process.env.TURNSTILE_SECRET_KEY
+  if (!secret) return true // skip in dev if not configured
+
+  const res = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ secret, response: token }),
+  })
+  const data = await res.json() as { success: boolean }
+  return data.success
+}
+
 // ---------------------------------------------------------------------------
 // Anthropic loop
 // ---------------------------------------------------------------------------
@@ -189,10 +202,17 @@ export async function POST(
     return Response.json({ error: 'Body inválido' }, { status: 400 })
   }
 
-  const { message, messages: prevMessages = [] } = body
+  const { message, messages: prevMessages = [], lead, turnstileToken } = body as ChatRequest & { lead?: { name: string; email: string }; turnstileToken?: string }
 
   if (!message?.trim()) {
     return Response.json({ error: 'El mensaje no puede estar vacío' }, { status: 400 })
+  }
+
+  if (turnstileToken) {
+    const valid = await verifyTurnstile(turnstileToken)
+    if (!valid) {
+      return Response.json({ error: 'Verificación de seguridad fallida' }, { status: 403 })
+    }
   }
 
   let portalInfo: PortalInfo
@@ -202,7 +222,7 @@ export async function POST(
     return Response.json({ error: 'Portal no encontrado' }, { status: 404 })
   }
 
-  const systemPrompt = buildSystemPromptV2(portalInfo)
+  const systemPrompt = buildSystemPromptV2(portalInfo, lead)
 
   try {
     let responseText: string

@@ -7,11 +7,11 @@
  */
 import type { PortalInfo } from '@/types/agent'
 
-export function buildSystemPromptV2(portal: PortalInfo): string {
+export function buildSystemPromptV2(portal: PortalInfo, lead?: { name: string; email: string }): string {
   const caps = portal.capabilities
 
   return `Sos ${portal.agent_name}, vendedora de ${portal.company_name}.
-${portal.description ? portal.description + '\n' : ''}
+${portal.description ? portal.description + '\n' : ''}${lead ? `\nEl cliente que te está escribiendo se llama ${lead.name} y su email es ${lead.email}. Usá su nombre al saludar si es la primera vez.\n` : ''}
 Tu trabajo: charlar con el cliente, entender qué etiquetas necesita, y dejar el pedido registrado para que el equipo cotice.
 
 QUIÉN SOS:
