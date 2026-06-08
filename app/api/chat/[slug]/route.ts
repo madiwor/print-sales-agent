@@ -56,28 +56,34 @@ async function submitToFormspree(
     console.log('=====================================================\n')
     return true
   }
+  const payload = {
+    _subject: `Nueva solicitud de cotización — ${portalInfo.company_name}`,
+    nombre:        lead?.name ?? 'No especificado',
+    email:         lead?.email ?? 'No especificado',
+    producto:      rfqDraft.product,
+    material:      rfqDraft.material,
+    medidas:       rfqDraft.width_mm && rfqDraft.height_mm ? `${rfqDraft.width_mm}×${rfqDraft.height_mm} mm` : null,
+    cantidad:      rfqDraft.quantity,
+    colores:       rfqDraft.colors,
+    acabado:       rfqDraft.finish,
+    entrega:       rfqDraft.delivery_format,
+    requerimientos: rfqDraft.special_requirements,
+    fecha_limite:  rfqDraft.deadline,
+    telefono:      rfqDraft.contact_phone ?? lead?.email,
+  }
+  console.log('[Formspree] Enviando a:', endpoint)
+  console.log('[Formspree] Payload:', JSON.stringify(payload))
   try {
     const res = await fetch(endpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-      body: JSON.stringify({
-        _subject: `Nueva solicitud de cotización — ${portalInfo.company_name}`,
-        nombre:        lead?.name ?? 'No especificado',
-        email:         lead?.email ?? 'No especificado',
-        producto:      rfqDraft.product,
-        material:      rfqDraft.material,
-        medidas:       rfqDraft.width_mm && rfqDraft.height_mm ? `${rfqDraft.width_mm}×${rfqDraft.height_mm} mm` : null,
-        cantidad:      rfqDraft.quantity,
-        colores:       rfqDraft.colors,
-        acabado:       rfqDraft.finish,
-        entrega:       rfqDraft.delivery_format,
-        requerimientos: rfqDraft.special_requirements,
-        fecha_limite:  rfqDraft.deadline,
-        telefono:      rfqDraft.contact_phone ?? lead?.email,
-      }),
+      body: JSON.stringify(payload),
     })
+    const responseBody = await res.text()
+    console.log('[Formspree] Status:', res.status, '| Response:', responseBody)
     return res.ok
-  } catch {
+  } catch (err) {
+    console.error('[Formspree] Error:', err)
     return false
   }
 }
@@ -146,6 +152,7 @@ export async function POST(
     ])
 
     // 3. Submit if agent signaled
+    console.log(`[chat/${slug}] shouldSubmit=${shouldSubmit} | rfqReady=${newDraft?.ready_to_submit ?? false}`)
     if (shouldSubmit && newDraft) {
       await submitToFormspree(newDraft, lead, portalInfo)
     }
