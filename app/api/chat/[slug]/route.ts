@@ -27,26 +27,58 @@ async function verifyTurnstile(token: string): Promise<boolean> {
   return data.success
 }
 
+const EXTRACTION_TOOL: Anthropic.Tool = {
+  name: 'extract_rfq',
+  description: 'Extrae los datos estructurados de la solicitud de cotización de la conversación.',
+  input_schema: {
+    type: 'object' as const,
+    properties: {
+      product:              { type: 'string',  description: 'Tipo de producto' },
+      quantity:             { type: 'string',  description: 'Cantidad solicitada' },
+      width_mm:             { type: 'number',  description: 'Ancho en mm' },
+      height_mm:            { type: 'number',  description: 'Alto en mm' },
+      material:             { type: 'string',  description: 'Material tal como lo dijo el cliente' },
+      colors:               { type: 'number',  description: 'Número de colores. 0 = sin impresión.' },
+      finish:               { type: 'string',  description: 'Acabado solicitado' },
+      die_cut:              { type: 'string',  description: 'Forma del troquel' },
+      has_artwork:          { type: 'boolean', description: 'Si el cliente ya tiene el diseño' },
+      special_requirements: { type: 'string',  description: 'Requerimientos especiales' },
+      deadline:             { type: 'string',  description: 'Fecha límite' },
+      delivery_format:      { type: 'string',  description: 'rollo o hoja' },
+      contact_name:         { type: 'string',  description: 'Nombre del contacto' },
+      contact_email:        { type: 'string',  description: 'Email del contacto' },
+      contact_phone:        { type: 'string',  description: 'Teléfono del contacto' },
+      status:               { type: 'string',  enum: ['incomplete', 'needs_clarification', 'ready_to_send'] },
+      missing_fields:       { type: 'array', items: { type: 'string' }, description: 'Campos críticos faltantes' },
+      ready_to_submit:      { type: 'boolean', description: 'true si tiene material, quantity y al menos una dimensión' },
+    },
+    required: ['status', 'missing_fields', 'ready_to_submit'],
+  },
+}
+
 async function extractRFQ(
   conversation: Anthropic.MessageParam[]
 ): Promise<RFQDraft | null> {
-  // Anthropic requires conversation to start with 'user' — drop leading assistant messages
   const messages = conversation[0]?.role === 'assistant'
     ? conversation.slice(1)
     : conversation
   if (messages.length === 0) return null
   try {
     const response = await anthropic.messages.create({
-      model:      EXTRACTION_MODEL,
-      max_tokens: 4000,
-      system:     buildExtractionPrompt(),
+      model:       EXTRACTION_MODEL,
+      max_tokens:  2000,
+      system:      'Extraé los datos de la solicitud de cotización llamando a extract_rfq. Usá exactamente los valores que dijo el cliente.',
       messages,
+      tools:       [EXTRACTION_TOOL],
+      tool_choice: { type: 'any' },
     })
-    const raw = response.content.find(b => b.type === 'text')?.text ?? ''
-    console.log('[Extractor] Raw response length:', raw.length)
-    const text = raw.replace(/^\s*```(?:json)?\s*/i, '').replace(/\s*```\s*$/i, '').trim()
-    const parsed = JSON.parse(text) as RFQDraft
-    return parsed
+    const toolUse = response.content.find(b => b.type === 'tool_use')
+    if (!toolUse || toolUse.type !== 'tool_use') {
+      console.error('[Extractor] No tool_use block in response')
+      return null
+    }
+    console.log('[Extractor] OK, ready_to_submit:', (toolUse.input as RFQDraft).ready_to_submit)
+    return toolUse.input as RFQDraft
   } catch (err) {
     console.error('[Extractor] Error:', err)
     return null
