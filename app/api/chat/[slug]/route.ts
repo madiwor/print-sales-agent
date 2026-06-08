@@ -30,12 +30,17 @@ async function verifyTurnstile(token: string): Promise<boolean> {
 async function extractRFQ(
   conversation: Anthropic.MessageParam[]
 ): Promise<RFQDraft | null> {
+  // Anthropic requires conversation to start with 'user' — drop leading assistant messages
+  const messages = conversation[0]?.role === 'assistant'
+    ? conversation.slice(1)
+    : conversation
+  if (messages.length === 0) return null
   try {
     const response = await anthropic.messages.create({
       model:      EXTRACTION_MODEL,
-      max_tokens: 1000,
+      max_tokens: 2000,
       system:     buildExtractionPrompt(),
-      messages:   conversation,
+      messages,
     })
     const text = response.content.find(b => b.type === 'text')?.text ?? ''
     console.log('[Extractor] Raw response:', text.slice(0, 300))
