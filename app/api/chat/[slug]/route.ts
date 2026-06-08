@@ -44,7 +44,6 @@ async function extractRFQ(
     })
     const raw = response.content.find(b => b.type === 'text')?.text ?? ''
     console.log('[Extractor] Raw response length:', raw.length)
-    // Strip markdown code fences (model may add leading whitespace/newlines before the fence)
     const text = raw.replace(/^\s*```(?:json)?\s*/i, '').replace(/\s*```\s*$/i, '').trim()
     const parsed = JSON.parse(text) as RFQDraft
     return parsed
