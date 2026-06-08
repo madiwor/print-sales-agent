@@ -3,7 +3,7 @@
 import { useState, type FormEvent } from 'react'
 
 interface LeadFormProps {
-  onSubmit: (lead: { name: string; email: string; turnstileToken?: string }) => void
+  onSubmit: (lead: { name: string; email: string; company?: string; turnstileToken?: string }) => void
   accentColor?: string
   logo?: React.ReactNode
 }
@@ -11,8 +11,9 @@ interface LeadFormProps {
 const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY
 
 export function LeadForm({ onSubmit, accentColor = '#E31E24', logo }: LeadFormProps) {
-  const [name, setName]   = useState('')
-  const [email, setEmail] = useState('')
+  const [name, setName]       = useState('')
+  const [email, setEmail]     = useState('')
+  const [company, setCompany] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError]    = useState('')
 
@@ -22,7 +23,7 @@ export function LeadForm({ onSubmit, accentColor = '#E31E24', logo }: LeadFormPr
     setError('')
     setLoading(true)
     try {
-      onSubmit({ name: name.trim(), email: email.trim() })
+      onSubmit({ name: name.trim(), email: email.trim(), company: company.trim() || undefined })
     } catch {
       setError('Hubo un error. Por favor intentá de nuevo.')
       setLoading(false)
@@ -54,6 +55,22 @@ export function LeadForm({ onSubmit, accentColor = '#E31E24', logo }: LeadFormPr
               placeholder="Tu nombre"
               required
               autoFocus
+              className="w-full rounded-xl border border-neutral-300 px-3 py-2 text-sm
+                focus:outline-none focus:ring-2 focus:border-transparent"
+              style={{ '--tw-ring-color': accentColor } as React.CSSProperties}
+            />
+          </div>
+
+          <div>
+            <label htmlFor="lead-company" className="block text-sm font-medium text-neutral-700 mb-1">
+              Empresa <span className="text-neutral-400 font-normal">(opcional)</span>
+            </label>
+            <input
+              id="lead-company"
+              type="text"
+              value={company}
+              onChange={e => setCompany(e.target.value)}
+              placeholder="Nombre de tu empresa"
               className="w-full rounded-xl border border-neutral-300 px-3 py-2 text-sm
                 focus:outline-none focus:ring-2 focus:border-transparent"
               style={{ '--tw-ring-color': accentColor } as React.CSSProperties}

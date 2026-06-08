@@ -6,8 +6,9 @@ export interface ToolContext {
 }
 
 export interface Lead {
-  name:  string
-  email: string
+  name:     string
+  email:    string
+  company?: string
 }
 
 export interface ChatRequest {
@@ -81,6 +82,8 @@ export interface RFQDraft {
   contact_name:          string | null
   contact_email:         string | null
   contact_phone:         string | null
+  company_name:          string | null
+  product_type:          'etiquetas' | 'impresoras' | 'ribbons' | 'mixto' | null
   status:                'incomplete' | 'needs_clarification' | 'ready_to_send'
   missing_fields:        string[]
   ready_to_submit:       boolean
