@@ -38,12 +38,14 @@ async function extractRFQ(
   try {
     const response = await anthropic.messages.create({
       model:      EXTRACTION_MODEL,
-      max_tokens: 2000,
+      max_tokens: 4000,
       system:     buildExtractionPrompt(),
       messages,
     })
-    const text = response.content.find(b => b.type === 'text')?.text ?? ''
-    console.log('[Extractor] Raw response:', text.slice(0, 300))
+    const raw = response.content.find(b => b.type === 'text')?.text ?? ''
+    console.log('[Extractor] Raw response:', raw.slice(0, 300))
+    // Strip markdown code fences if model wrapped the JSON
+    const text = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/i, '').trim()
     const parsed = JSON.parse(text) as RFQDraft
     return parsed
   } catch (err) {
