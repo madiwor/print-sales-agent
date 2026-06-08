@@ -38,8 +38,11 @@ async function extractRFQ(
       messages:   conversation,
     })
     const text = response.content.find(b => b.type === 'text')?.text ?? ''
-    return JSON.parse(text) as RFQDraft
-  } catch {
+    console.log('[Extractor] Raw response:', text.slice(0, 300))
+    const parsed = JSON.parse(text) as RFQDraft
+    return parsed
+  } catch (err) {
+    console.error('[Extractor] Error:', err)
     return null
   }
 }
