@@ -43,8 +43,8 @@ async function extractRFQ(
       messages,
     })
     const raw = response.content.find(b => b.type === 'text')?.text ?? ''
-    console.log('[Extractor] Raw response:', raw.slice(0, 300))
-    const text = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/i, '').trim()
+    console.log('[Extractor] Raw response length:', raw.length)
+    const text = raw.replace(/^\s*```(?:json)?\s*/i, '').replace(/\s*```\s*$/i, '').trim()
     const parsed = JSON.parse(text) as RFQDraft
     return parsed
   } catch (err) {
