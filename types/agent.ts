@@ -14,6 +14,7 @@ export interface ChatRequest {
   message: string
   messages?: Anthropic.MessageParam[]
   lead?: Lead
+  rfqDraft?: RFQDraft | null
 }
 
 export interface ChatResponse {
@@ -65,6 +66,22 @@ export interface FeasibilityResult {
 }
 
 export interface RFQDraft {
-  rfq_id: string
-  status: 'draft'
+  product:               string | null
+  quantity:              string | null
+  width_mm:              number | null
+  height_mm:             number | null
+  material:              string | null
+  colors:                number | null
+  finish:                string | null
+  die_cut:               string | null
+  has_artwork:           boolean | null
+  special_requirements:  string | null
+  deadline:              string | null
+  delivery_format:       string | null   // "rollo" | "hoja" | null
+  contact_name:          string | null
+  contact_email:         string | null
+  contact_phone:         string | null
+  status:                'incomplete' | 'needs_clarification' | 'ready_to_send'
+  missing_fields:        string[]
+  ready_to_submit:       boolean
 }

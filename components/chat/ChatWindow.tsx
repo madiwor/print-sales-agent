@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, type FormEvent } from 'react'
 import type Anthropic from '@anthropic-ai/sdk'
+import type { RFQDraft } from '@/types/agent'
 
 interface Message {
   role:    'user' | 'assistant'
@@ -58,6 +59,7 @@ export function ChatWindow({ slug, agentName, company, greeting, lead, accentCol
   const [apiMessages, setApiMessages] = useState<Anthropic.MessageParam[]>([
     { role: 'assistant', content: greeting },
   ])
+  const [rfqDraft, setRfqDraft] = useState<RFQDraft | null>(null)
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
@@ -83,7 +85,7 @@ export function ChatWindow({ slug, agentName, company, greeting, lead, accentCol
       const res = await fetch(`/api/chat/${slug}`, {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ message: text, messages: apiMessages, lead }),
+        body:    JSON.stringify({ message: text, messages: apiMessages, lead, rfqDraft }),
       })
 
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
@@ -91,6 +93,7 @@ export function ChatWindow({ slug, agentName, company, greeting, lead, accentCol
       const data = await res.json()
       setMessages(prev => [...prev, { role: 'assistant', content: data.response }])
       setApiMessages(data.messages)
+      if (data.rfqDraft) setRfqDraft(data.rfqDraft)
     } catch {
       setMessages(prev => [
         ...prev,
