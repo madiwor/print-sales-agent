@@ -147,6 +147,7 @@ export function ChatWindow({ slug, agentName, company, greeting, lead, accentCol
           placeholder="Escribí tu mensaje..."
           rows={1}
           disabled={loading}
+          autoComplete="off"
           data-gramm="false"
           data-gramm_editor="false"
           data-enable-grammarly="false"
