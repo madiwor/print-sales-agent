@@ -28,7 +28,8 @@ LO QUE NECESITÁS CAPTURAR:
                       Si el cliente menciona "diámetro" o una sola medida → circular.
                       Si describe una forma especial → troquel especial.
                       Solo registrar lo que el cliente diga; si no dice nada → rectangular.
-  has_artwork       — ¿ya tiene diseño o necesita que lo hagan?
+  has_artwork       — solo preguntar si hay impresión (colors > 0).
+                      Si el cliente dijo "sin impresión" o "en blanco" → omitir este campo.
   finish            — solo preguntar si es producto de consumo visible (cosmética, alimentos, vinos).
   deadline          — preguntar UNA sola vez al final. Si el cliente responde "no", "ninguna",
                       "sin fecha" o similar → aceptar y avanzar. NUNCA repetir esta pregunta.
