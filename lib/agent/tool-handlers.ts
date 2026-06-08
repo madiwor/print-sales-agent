@@ -35,7 +35,7 @@ const NYSSA_PORTAL: PortalInfo = {
   agent_name:     'Sofía',
   agent_language: 'es',
   industry:       'etiquetas',
-  description:    'Con más de 20 años de trayectoria, Nyssa es líder en soluciones de identificación. Fabricamos etiquetas autoadhesivas personalizadas con impresión flexográfica e impresión digital full color UV. Trabajamos con todo tipo de materiales autoadhesivos para todas las industrias: retail, laboratorios, alimentos, farmacéutica, química, electrónica, logística e industria automotriz. Entregamos en hojas o rollos. También desarrollamos aplicaciones especiales y troquelados de seguridad.',
+  description:    'Con más de 20 años de trayectoria, Nyssa es líder en soluciones de identificación. Fabricamos etiquetas autoadhesivas personalizadas con impresión flexográfica e impresión digital full color UV. Trabajamos con todo tipo de materiales autoadhesivos para todas las industrias. También somos distribuidores oficiales de impresoras de etiquetas Toshiba (industriales, de oficina y portátiles) y comercializamos ribbons para impresoras termo-transferencia en todas las calidades (cera, cera-resina y resina).',
   contact_email:  'info@nyssa.com.ar',
   contact_phone:  '54-11-4756-6718',
   materials: [

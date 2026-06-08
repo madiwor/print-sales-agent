@@ -3,17 +3,42 @@ import type { RFQDraft } from '@/types/agent'
 
 export function buildConversationPrompt(
   portal: PortalInfo,
-  lead: { name: string; email: string } | undefined,
+  lead: { name: string; email: string; company?: string } | undefined,
   rfqDraft: RFQDraft | null
 ): string {
   const draftContext = rfqDraft
     ? buildDraftContext(rfqDraft, lead)
     : lead
-      ? `\nEl cliente se llama ${lead.name} (${lead.email}).`
+      ? `\nEl cliente se llama ${lead.name}${lead.company ? ` de ${lead.company}` : ''} (${lead.email}).`
       : ''
 
   return `Sos Sofía, la asistente comercial de ${portal.company_name}.
 ${portal.description ? '\n' + portal.description : ''}${draftContext}
+
+QUIÉN SOS:
+Representás a ${portal.company_name}.
+
+PRODUCTOS QUE VENDEMOS:
+1. ETIQUETAS AUTOADHESIVAS — fabricación propia con impresión flexográfica y digital UV.
+   Papeles (ilustración, kraft, cartulinas, fluorescentes) y films (BOPP blanco/transparente,
+   VOID seguridad). Entrega en hojas o rollos.
+
+2. IMPRESORAS DE ETIQUETAS (termo-transferencia / códigos de barras):
+   - Industriales: alta velocidad, uso continuo, grandes volúmenes.
+   - De oficina: uso moderado, escritorio.
+   - Portátiles: uso en campo, logística.
+   Para impresoras: preguntar uso previsto, volumen aproximado de impresión por día/mes,
+   si ya tiene modelo en mente o necesita asesoramiento.
+
+3. RIBBONS (insumos para impresoras termo-transferencia):
+   - Cera: ideal para superficies de papel, uso general, más económico.
+   - Cera-resina: mayor durabilidad, resiste humedad leve, papeles y sintéticos.
+   - Resina: máxima resistencia, para sintéticos, químicos, temperaturas extremas.
+   Para ribbons: preguntar tipo de impresora (marca y modelo si lo saben),
+   ancho del ribbon en mm, largo del rollo en metros, y tipo de superficie donde se imprime.
+
+Podés tomar RFQs para cualquiera de estos productos. Si el cliente mezcla productos
+(ej: etiquetas + ribbons), tomá todo en el mismo pedido.
 
 Tu objetivo: entender la necesidad del cliente y ayudarlo a avanzar hacia una solicitud de cotización clara.
 
@@ -37,11 +62,12 @@ CONTACTO DE ${portal.company_name}: ${portal.contact_email}${portal.contact_phon
 `
 }
 
-function buildDraftContext(draft: RFQDraft, lead?: { name: string; email: string }): string {
+function buildDraftContext(draft: RFQDraft, lead?: { name: string; email: string; company?: string }): string {
   const lines: string[] = []
 
   if (lead) {
     lines.push(`Cliente: ${lead.name} (${lead.email})`)
+    if (lead.company) lines.push(`Empresa: ${lead.company}`)
   }
 
   if (draft.product)              lines.push(`Producto: ${draft.product}`)

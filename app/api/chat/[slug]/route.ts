@@ -87,7 +87,7 @@ async function extractRFQ(
 
 async function submitToFormspree(
   rfqDraft: RFQDraft,
-  lead: { name: string; email: string } | undefined,
+  lead: { name: string; email: string; company?: string } | undefined,
   portalInfo: PortalInfo
 ): Promise<boolean> {
   const endpoint = process.env.FORMSPREE_ENDPOINT
@@ -101,6 +101,8 @@ async function submitToFormspree(
     _subject: `Nueva solicitud de cotización — ${portalInfo.company_name}`,
     nombre:        lead?.name ?? 'No especificado',
     email:         lead?.email ?? 'No especificado',
+    empresa:       rfqDraft.company_name ?? lead?.company ?? null,
+    tipo_producto: rfqDraft.product_type,
     producto:      rfqDraft.product,
     material:      rfqDraft.material,
     medidas:       rfqDraft.width_mm && rfqDraft.height_mm ? `${rfqDraft.width_mm}×${rfqDraft.height_mm} mm` : null,
@@ -111,6 +113,10 @@ async function submitToFormspree(
     requerimientos: rfqDraft.special_requirements,
     fecha_limite:  rfqDraft.deadline,
     telefono:      rfqDraft.contact_phone ?? lead?.email,
+    tipo_impresora: (rfqDraft as any).printer_type ?? null,
+    tipo_ribbon:    (rfqDraft as any).ribbon_type ?? null,
+    ribbon_medidas: (rfqDraft as any).ribbon_width_mm ? `${(rfqDraft as any).ribbon_width_mm}mm × ${(rfqDraft as any).ribbon_length_m}m` : null,
+    impresora_marca_modelo: (rfqDraft as any).printer_brand_model ?? null,
   }
   console.log('[Formspree] Enviando a:', endpoint)
   console.log('[Formspree] Payload:', JSON.stringify(payload))
@@ -135,7 +141,7 @@ export async function POST(
 ) {
   const { slug } = await params
 
-  let body: ChatRequest & { lead?: { name: string; email: string }; turnstileToken?: string; rfqDraft?: RFQDraft | null }
+  let body: ChatRequest & { lead?: { name: string; email: string; company?: string }; turnstileToken?: string; rfqDraft?: RFQDraft | null }
   try {
     body = await request.json()
   } catch {
