@@ -35,7 +35,8 @@ export default async function CotizarPage({
   const brand = BRAND_CONFIG[slug]
 
   return (
-    <div className="flex flex-col h-screen bg-white">
+    <div className="flex flex-col h-[100dvh] bg-neutral-100 sm:items-center sm:justify-center">
+      <div className="flex flex-col w-full h-full sm:h-[680px] sm:max-w-md sm:rounded-2xl sm:shadow-xl sm:overflow-hidden bg-white">
       <CotizarShell
         slug={slug}
         agentName={portal.agent_name}
@@ -44,6 +45,7 @@ export default async function CotizarPage({
         accentColor={brand?.accentColor}
         logo={brand?.logo}
       />
+      </div>
     </div>
   )
 }

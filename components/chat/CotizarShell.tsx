@@ -14,12 +14,12 @@ interface CotizarShellProps {
 }
 
 export function CotizarShell({ slug, agentName, company, greeting, accentColor, logo }: CotizarShellProps) {
-  const [lead, setLead] = useState<{ name: string; email: string } | null>(null)
+  const [lead, setLead] = useState<{ name: string; email: string; company?: string } | null>(null)
 
   if (!lead) {
     return (
       <LeadForm
-        onSubmit={({ name, email }) => setLead({ name, email })}
+        onSubmit={({ name, email, company }) => setLead({ name, email, company })}
         accentColor={accentColor}
         logo={logo}
       />

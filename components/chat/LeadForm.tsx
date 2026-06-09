@@ -55,7 +55,7 @@ export function LeadForm({ onSubmit, accentColor = '#E31E24', logo }: LeadFormPr
               placeholder="Tu nombre"
               required
               autoFocus
-              className="w-full rounded-xl border border-neutral-300 px-3 py-2 text-sm
+              className="w-full rounded-xl border border-neutral-300 px-3 py-2 text-base sm:text-sm
                 focus:outline-none focus:ring-2 focus:border-transparent"
               style={{ '--tw-ring-color': accentColor } as React.CSSProperties}
             />
@@ -71,7 +71,7 @@ export function LeadForm({ onSubmit, accentColor = '#E31E24', logo }: LeadFormPr
               value={company}
               onChange={e => setCompany(e.target.value)}
               placeholder="Nombre de tu empresa"
-              className="w-full rounded-xl border border-neutral-300 px-3 py-2 text-sm
+              className="w-full rounded-xl border border-neutral-300 px-3 py-2 text-base sm:text-sm
                 focus:outline-none focus:ring-2 focus:border-transparent"
               style={{ '--tw-ring-color': accentColor } as React.CSSProperties}
             />
@@ -88,7 +88,7 @@ export function LeadForm({ onSubmit, accentColor = '#E31E24', logo }: LeadFormPr
               onChange={e => setEmail(e.target.value)}
               placeholder="tu@empresa.com"
               required
-              className="w-full rounded-xl border border-neutral-300 px-3 py-2 text-sm
+              className="w-full rounded-xl border border-neutral-300 px-3 py-2 text-base sm:text-sm
                 focus:outline-none focus:ring-2 focus:border-transparent"
               style={{ '--tw-ring-color': accentColor } as React.CSSProperties}
             />
