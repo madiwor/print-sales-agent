@@ -90,7 +90,7 @@ function buildDraftContext(draft: RFQDraft, lead?: { name: string; email: string
     : ''
 
   const status = draft.ready_to_submit
-    ? '\n\nESTADO: El pedido tiene suficiente información para ser enviado. Mostrá un resumen y pedí confirmación.'
+    ? '\n\nESTADO: El pedido tiene suficiente información para ser enviado. Pedí confirmación directamente: "¿Confirmo y cargo la solicitud de precios?" — sin listar los datos de nuevo.'
     : ''
 
   return collected + missing + status

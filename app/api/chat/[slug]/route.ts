@@ -112,7 +112,7 @@ async function submitToFormspree(
     entrega:       rfqDraft.delivery_format,
     requerimientos: rfqDraft.special_requirements,
     fecha_limite:  rfqDraft.deadline,
-    telefono:      rfqDraft.contact_phone ?? lead?.email,
+    telefono:      rfqDraft.contact_phone ?? null,
     tipo_impresora: (rfqDraft as any).printer_type ?? null,
     tipo_ribbon:    (rfqDraft as any).ribbon_type ?? null,
     ribbon_medidas: (rfqDraft as any).ribbon_width_mm ? `${(rfqDraft as any).ribbon_width_mm}mm × ${(rfqDraft as any).ribbon_length_m}m` : null,
