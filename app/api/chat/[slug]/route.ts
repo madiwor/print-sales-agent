@@ -3,6 +3,7 @@ import type { NextRequest } from 'next/server'
 import { buildConversationPrompt } from '@/lib/agent/prompt-conversation'
 import { buildExtractionPrompt } from '@/lib/agent/prompt-extract'
 import { handleTool } from '@/lib/agent/tool-handlers'
+import { checkRateLimit, getClientIp } from '@/lib/rate-limit'
 import type { ChatRequest, ChatResponse, PortalInfo, RFQDraft } from '@/types/agent'
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
@@ -10,6 +11,11 @@ const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 const CONVERSATION_MODEL = 'claude-sonnet-4-6'
 const EXTRACTION_MODEL   = 'claude-haiku-4-5-20251001'
 const MAX_TOKENS         = 1000
+
+// Límites anti-abuso: el endpoint es público y cada request consume tokens de la API
+const MAX_REQUESTS_PER_MINUTE = 10   // por IP
+const MAX_MESSAGE_CHARS       = 2000 // un RFQ real nunca necesita más
+const MAX_CONVERSATION_TURNS  = 60   // mensajes acumulados (user + assistant)
 
 async function getPortalInfo(slug: string): Promise<PortalInfo> {
   return (await handleTool('get_portal_info', {}, { converterSlug: slug })) as PortalInfo
@@ -141,6 +147,16 @@ export async function POST(
 ) {
   const { slug } = await params
 
+  const ip = getClientIp(request)
+  const limit = checkRateLimit(`chat:${ip}`, MAX_REQUESTS_PER_MINUTE)
+  if (!limit.allowed) {
+    console.warn(`[chat/${slug}] Rate limit excedido para IP ${ip}`)
+    return Response.json(
+      { error: 'Demasiados mensajes. Esperá un momento e intentá de nuevo.' },
+      { status: 429, headers: { 'Retry-After': String(limit.retryAfterSeconds) } }
+    )
+  }
+
   let body: ChatRequest & { lead?: { name: string; email: string; company?: string }; turnstileToken?: string; rfqDraft?: RFQDraft | null }
   try {
     body = await request.json()
@@ -152,6 +168,20 @@ export async function POST(
 
   if (!message?.trim()) {
     return Response.json({ error: 'El mensaje no puede estar vacío' }, { status: 400 })
+  }
+
+  if (message.length > MAX_MESSAGE_CHARS) {
+    return Response.json(
+      { error: `El mensaje es demasiado largo (máximo ${MAX_MESSAGE_CHARS} caracteres).` },
+      { status: 400 }
+    )
+  }
+
+  if (prevMessages.length > MAX_CONVERSATION_TURNS) {
+    return Response.json(
+      { error: 'La conversación alcanzó su límite. Por favor recargá la página para empezar de nuevo.' },
+      { status: 400 }
+    )
   }
 
   if (turnstileToken) {
