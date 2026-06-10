@@ -88,19 +88,22 @@ export function ChatWindow({ slug, agentName, company, greeting, lead, accentCol
         body:    JSON.stringify({ message: text, messages: apiMessages, lead, rfqDraft }),
       })
 
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => null)
+        throw new Error(errBody?.error ?? `HTTP ${res.status}`)
+      }
 
       const data = await res.json()
       setMessages(prev => [...prev, { role: 'assistant', content: data.response }])
       setApiMessages(data.messages)
       if (data.rfqDraft) setRfqDraft(data.rfqDraft)
-    } catch {
+    } catch (err) {
+      const friendly = err instanceof Error && !err.message.startsWith('HTTP') && err.message !== 'Failed to fetch'
+        ? err.message
+        : 'Hubo un error al procesar tu mensaje. Por favor intentá de nuevo.'
       setMessages(prev => [
         ...prev,
-        {
-          role:    'assistant',
-          content: 'Hubo un error al procesar tu mensaje. Por favor intentá de nuevo.',
-        },
+        { role: 'assistant', content: friendly },
       ])
     } finally {
       setLoading(false)
