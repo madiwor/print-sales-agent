@@ -1,65 +1,177 @@
-import Image from "next/image";
+import Link from 'next/link'
+
+const CONTACT_EMAIL = 'imorrison@madiwor.com'
+
+const STEPS = [
+  {
+    n: '1',
+    title: 'Tu cliente describe lo que necesita',
+    text: 'En lenguaje natural, como le escribiría a un vendedor: "Necesito 10 mil etiquetas de 50×80 en BOPP blanco".',
+  },
+  {
+    n: '2',
+    title: 'El agente completa la solicitud',
+    text: 'Pregunta solo lo que falta, una cosa por vez. Entiende materiales, medidas, cantidades y requerimientos especiales.',
+  },
+  {
+    n: '3',
+    title: 'Tu equipo recibe la cotización lista',
+    text: 'Llega por email una solicitud completa y estructurada: producto, medidas, material, cantidad, colores y contacto.',
+  },
+]
+
+const FEATURES = [
+  {
+    title: 'Atención 24/7',
+    text: 'Tus clientes cotizan a cualquier hora, desde cualquier dispositivo. Ninguna consulta queda sin responder.',
+  },
+  {
+    title: 'Con tu marca',
+    text: 'El portal lleva tu logo, tus colores y tu nombre. Tus clientes hablan con tu empresa, no con un software.',
+  },
+  {
+    title: 'Conoce tu negocio',
+    text: 'El agente se configura con tus productos, materiales y capacidades. Asesora como lo haría tu mejor vendedor.',
+  },
+  {
+    title: 'Solicitudes completas',
+    text: 'Se acabaron los mails de ida y vuelta pidiendo medidas o cantidades. Cada solicitud llega lista para cotizar.',
+  },
+  {
+    title: 'Integración simple',
+    text: 'Un link o un iframe en tu web actual. Sin desarrollo, sin cambiar tu sitio, funcionando en el día.',
+  },
+  {
+    title: 'Hecho para la industria gráfica',
+    text: 'Etiquetas, packaging, imprenta. El agente habla el idioma del rubro: troqueles, sustratos, acabados, ribbons.',
+  },
+]
 
 export default function Home() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <div className="bg-white text-neutral-900">
+      {/* Nav */}
+      <header className="border-b border-neutral-100">
+        <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
+          <span className="font-bold text-lg tracking-tight">
+            madiwor<span className="text-blue-600">/agents</span>
+          </span>
+          <a
+            href={`mailto:${CONTACT_EMAIL}?subject=Quiero un agente de ventas para mi empresa`}
+            className="text-sm font-medium text-neutral-600 hover:text-neutral-900 transition-colors"
+          >
+            Contacto
+          </a>
+        </div>
+      </header>
+
+      {/* Hero */}
+      <section className="max-w-5xl mx-auto px-6 pt-20 pb-16 text-center">
+        <h1 className="text-4xl sm:text-5xl font-bold tracking-tight leading-tight max-w-3xl mx-auto">
+          Tu vendedor digital que captura cotizaciones <span className="text-blue-600">24/7</span>
+        </h1>
+        <p className="mt-6 text-lg text-neutral-600 max-w-2xl mx-auto leading-relaxed">
+          Un agente de IA con tu marca que conversa con tus clientes, entiende qué necesitan
+          y le entrega a tu equipo comercial solicitudes de cotización completas y listas para responder.
+        </p>
+        <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
+          <Link
+            href="/demo/cotizar"
+            className="rounded-xl bg-blue-600 text-white px-6 py-3 text-sm font-semibold hover:bg-blue-700 transition-colors"
+          >
+            Probar la demo en vivo
+          </Link>
+          <a
+            href={`mailto:${CONTACT_EMAIL}?subject=Quiero un agente de ventas para mi empresa`}
+            className="rounded-xl border border-neutral-300 px-6 py-3 text-sm font-semibold hover:bg-neutral-50 transition-colors"
+          >
+            Quiero el mío
+          </a>
+        </div>
+        <p className="mt-4 text-xs text-neutral-400">
+          La demo es un portal real: chateá como si fueras un cliente.
+        </p>
+      </section>
+
+      {/* Cómo funciona */}
+      <section className="bg-neutral-50 py-16">
+        <div className="max-w-5xl mx-auto px-6">
+          <h2 className="text-2xl font-bold text-center mb-12">Cómo funciona</h2>
+          <div className="grid sm:grid-cols-3 gap-8">
+            {STEPS.map(step => (
+              <div key={step.n} className="text-center sm:text-left">
+                <div className="w-10 h-10 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center mx-auto sm:mx-0 mb-4">
+                  {step.n}
+                </div>
+                <h3 className="font-semibold mb-2">{step.title}</h3>
+                <p className="text-sm text-neutral-600 leading-relaxed">{step.text}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Features */}
+      <section className="py-16">
+        <div className="max-w-5xl mx-auto px-6">
+          <h2 className="text-2xl font-bold text-center mb-12">
+            Pensado para fábricas de etiquetas, imprentas y packaging
+          </h2>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {FEATURES.map(f => (
+              <div key={f.title} className="rounded-2xl border border-neutral-200 p-6">
+                <h3 className="font-semibold mb-2">{f.title}</h3>
+                <p className="text-sm text-neutral-600 leading-relaxed">{f.text}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* En producción */}
+      <section className="bg-neutral-50 py-16">
+        <div className="max-w-3xl mx-auto px-6 text-center">
+          <h2 className="text-2xl font-bold mb-4">Ya está funcionando</h2>
+          <p className="text-neutral-600 leading-relaxed">
+            Empresas de la industria gráfica ya reciben solicitudes de cotización
+            a través de su agente, integrado en su propio sitio web.
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
+      </section>
+
+      {/* CTA final */}
+      <section className="py-20">
+        <div className="max-w-3xl mx-auto px-6 text-center">
+          <h2 className="text-3xl font-bold mb-4">Sumá tu vendedor digital</h2>
+          <p className="text-neutral-600 mb-8">
+            Contanos sobre tu empresa y en pocos días tu agente está atendiendo clientes con tu marca.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <a
+              href={`mailto:${CONTACT_EMAIL}?subject=Quiero un agente de ventas para mi empresa`}
+              className="rounded-xl bg-blue-600 text-white px-8 py-3 text-sm font-semibold hover:bg-blue-700 transition-colors"
+            >
+              Contactanos
+            </a>
+            <Link
+              href="/demo/cotizar"
+              className="rounded-xl border border-neutral-300 px-8 py-3 text-sm font-semibold hover:bg-neutral-50 transition-colors"
+            >
+              Ver la demo
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="border-t border-neutral-100 py-8">
+        <div className="max-w-5xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-2 text-sm text-neutral-400">
+          <span>© {new Date().getFullYear()} Madiwor</span>
+          <a href={`mailto:${CONTACT_EMAIL}`} className="hover:text-neutral-600 transition-colors">
+            {CONTACT_EMAIL}
           </a>
         </div>
-      </main>
+      </footer>
     </div>
-  );
+  )
 }
