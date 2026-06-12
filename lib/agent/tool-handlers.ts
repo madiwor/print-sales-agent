@@ -3,6 +3,7 @@ import type { ToolContext } from '@/types/agent'
 import { getPortalBySlug } from '@/lib/supabase/portals'
 
 const MOCK_PORTAL: PortalInfo = {
+  id:             'mock-demo',
   company_name:   'Etiquetas Demo SA',
   agent_name:     'Sofía',
   agent_language: 'es',
@@ -12,7 +13,7 @@ const MOCK_PORTAL: PortalInfo = {
   contact_phone:  '+54 11 4000-0000',
   materials: [
     { name: 'Vinilo blanco brillante',  slug: 'vinilo-blanco-brillante',  description: 'Alta resistencia a humedad y UV. Ideal para cosmética, limpieza y exterior.' },
-    { name: 'BOPP transparente',        slug: 'bopp-transparente',        description: 'Transparente, look "sin etiqueta". Ideal para frascos de vidrio.' },
+    { name: 'BOPP transparente',        slug: 'bopp-transparente',        description: 'Transparente, look “sin etiqueta”. Ideal para frascos de vidrio.' },
     { name: 'Papel couché',             slug: 'papel-couche',             description: 'Look premium, acabado suave. Ideal para vinos, aceites y productos gourmet.' },
     { name: 'Papel kraft',              slug: 'papel-kraft',              description: 'Look artesanal y natural. Ideal para productos orgánicos, miel y mermeladas.' },
     { name: 'Poliéster plateado',       slug: 'poliester-plateado',       description: 'Aspecto metálico, muy resistente. Ideal para industria y cosmética premium.' },
@@ -32,6 +33,7 @@ const MOCK_PORTAL: PortalInfo = {
 }
 
 const NYSSA_PORTAL: PortalInfo = {
+  id:             'mock-nyssa',
   company_name:   'Nyssa',
   agent_name:     'Sofía',
   agent_language: 'es',
@@ -45,7 +47,7 @@ const NYSSA_PORTAL: PortalInfo = {
     { name: 'Papel cartulina', slug: 'papel-cartulina', description: 'Mayor rigidez. Ideal para etiquetas de colgar y envases.' },
     { name: 'Papel fluorescente', slug: 'papel-fluorescente', description: 'Alta visibilidad. Ideal para señalización y promociones.' },
     { name: 'BOPP blanco', slug: 'bopp-blanco', description: 'Film plástico blanco, resistente a humedad. Ideal para productos de limpieza y cosmética.' },
-    { name: 'BOPP transparente', slug: 'bopp-transparente', description: 'Film transparente, look "sin etiqueta". Ideal para frascos de vidrio.' },
+    { name: 'BOPP transparente', slug: 'bopp-transparente', description: 'Film transparente, look “sin etiqueta”. Ideal para frascos de vidrio.' },
     { name: 'VOID seguridad blanco', slug: 'void-seguridad-blanco', description: 'Etiqueta de seguridad que deja marca al ser removida.' },
     { name: 'VOID seguridad plata', slug: 'void-seguridad-plata', description: 'Etiqueta de seguridad metálica que deja marca al ser removida.' },
   ],
@@ -90,7 +92,7 @@ function checkFeasibilityLogic(specs: Record<string, unknown>, portal: PortalInf
   const colors = specs.colors as number | undefined
   if (colors !== undefined && colors > portal.capabilities.max_colors) {
     issues.push(
-      `El máximo de colores es ${portal.capabilities.max_colors}. Solicitás ${colors} colores.`
+      `El máximo de colores es ${portal.capabilities.max_colors}. Soicitás ${colors} colores.`
     )
   }
 
@@ -99,7 +101,7 @@ function checkFeasibilityLogic(specs: Record<string, unknown>, portal: PortalInf
     const materialExists = portal.materials.some(m => m.slug === material || m.name.toLowerCase() === material.toLowerCase())
     if (!materialExists) {
       issues.push(
-        `El material "${material}" no está en el catálogo. Materiales disponibles: ${portal.materials.map(m => m.name).join(', ')}.`
+        `El material “${material}” no está en el catálogo. Materiales disponibles: ${portal.materials.map(m => m.name).join(', ')}.`
       )
     }
   }

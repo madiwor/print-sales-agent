@@ -239,7 +239,7 @@ export async function POST(
       cache_creation_input_tokens?: number
     }
     trackTokenUsage({
-      converterId:      (portalInfo as any).id ?? slug,
+      converterId:      portalInfo.id,
       inputTokens:      (convUsage.input_tokens ?? 0) + extractInput,
       outputTokens:     (convUsage.output_tokens ?? 0) + extractOutput,
       cacheReadTokens:  convUsage.cache_read_input_tokens ?? 0,
