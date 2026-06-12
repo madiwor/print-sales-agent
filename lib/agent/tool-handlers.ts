@@ -1,5 +1,6 @@
 import type { PortalInfo, FeasibilityResult } from '@/types/agent'
 import type { ToolContext } from '@/types/agent'
+import { getPortalBySlug } from '@/lib/supabase/portals'
 
 const MOCK_PORTAL: PortalInfo = {
   company_name:   'Etiquetas Demo SA',
@@ -111,7 +112,10 @@ export async function handleTool(
   toolInput: Record<string, unknown>,
   _context:  ToolContext
 ): Promise<unknown> {
-  const portal = getPortal(_context.converterSlug)
+  const slug = _context.converterSlug
+
+  // Try DB first; fall back to hardcoded portals if unavailable
+  const portal = await getPortalBySlug(slug).catch(() => null) ?? getPortal(slug)
 
   switch (toolName) {
     case 'get_portal_info':

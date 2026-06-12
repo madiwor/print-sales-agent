@@ -60,6 +60,7 @@ export function ChatWindow({ slug, agentName, company, greeting, lead, accentCol
     { role: 'assistant', content: greeting },
   ])
   const [rfqDraft, setRfqDraft] = useState<RFQDraft | null>(null)
+  const [sessionId, setSessionId] = useState<string | null>(null)
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
@@ -85,7 +86,7 @@ export function ChatWindow({ slug, agentName, company, greeting, lead, accentCol
       const res = await fetch(`/api/chat/${slug}`, {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ message: text, messages: apiMessages, lead, rfqDraft }),
+        body:    JSON.stringify({ message: text, messages: apiMessages, lead, rfqDraft, sessionId }),
       })
 
       if (!res.ok) {
@@ -97,6 +98,7 @@ export function ChatWindow({ slug, agentName, company, greeting, lead, accentCol
       setMessages(prev => [...prev, { role: 'assistant', content: data.response }])
       setApiMessages(data.messages)
       if (data.rfqDraft) setRfqDraft(data.rfqDraft)
+      if (data.sessionId) setSessionId(data.sessionId)
     } catch (err) {
       const friendly = err instanceof Error && !err.message.startsWith('HTTP') && err.message !== 'Failed to fetch'
         ? err.message

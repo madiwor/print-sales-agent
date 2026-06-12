@@ -4,6 +4,8 @@ import { buildConversationPrompt } from '@/lib/agent/prompt-conversation'
 import { buildExtractionPrompt } from '@/lib/agent/prompt-extract'
 import { handleTool } from '@/lib/agent/tool-handlers'
 import { checkRateLimit, getClientIp } from '@/lib/rate-limit'
+import { saveRFQ } from '@/lib/supabase/rfqs'
+import { upsertSession } from '@/lib/supabase/sessions'
 import type { ChatRequest, ChatResponse, PortalInfo, RFQDraft } from '@/types/agent'
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
@@ -157,14 +159,14 @@ export async function POST(
     )
   }
 
-  let body: ChatRequest & { lead?: { name: string; email: string; company?: string }; turnstileToken?: string; rfqDraft?: RFQDraft | null }
+  let body: ChatRequest & { lead?: { name: string; email: string; company?: string }; turnstileToken?: string; rfqDraft?: RFQDraft | null; sessionId?: string }
   try {
     body = await request.json()
   } catch {
     return Response.json({ error: 'Body inválido' }, { status: 400 })
   }
 
-  const { message, messages: prevMessages = [], lead, turnstileToken, rfqDraft: currentDraft } = body
+  const { message, messages: prevMessages = [], lead, turnstileToken, rfqDraft: currentDraft, sessionId } = body
 
   if (!message?.trim()) {
     return Response.json({ error: 'El mensaje no puede estar vacío' }, { status: 400 })
@@ -230,14 +232,35 @@ export async function POST(
 
     // 3. Submit if agent signaled
     console.log(`[chat/${slug}] shouldSubmit=${shouldSubmit} | rfqReady=${newDraft?.ready_to_submit ?? false}`)
-    if (shouldSubmit && newDraft) {
-      await submitToFormspree(newDraft, lead, portalInfo)
+    let rfqId: string | null = null
+    if (shouldSubmit && newDraft && lead) {
+      const [, savedId] = await Promise.all([
+        submitToFormspree(newDraft, lead, portalInfo),
+        saveRFQ({ converterSlug: slug, lead, draft: newDraft }).catch(err => {
+          console.error('[saveRFQ] Error (non-fatal):', err)
+          return null
+        }),
+      ])
+      rfqId = savedId ?? null
     }
 
-    const result: ChatResponse & { rfqDraft: RFQDraft | null } = {
-      response: responseText,
-      messages: updatedMessages,
-      rfqDraft: newDraft,
+    // 4. Persist session (non-fatal)
+    const newSessionId = await upsertSession({
+      sessionId:     sessionId ?? null,
+      converterSlug: slug,
+      contactEmail:  lead?.email ?? 'unknown',
+      messages:      updatedMessages,
+      rfqId,
+    }).catch(err => {
+      console.error('[upsertSession] Error (non-fatal):', err)
+      return sessionId ?? null
+    })
+
+    const result: ChatResponse & { rfqDraft: RFQDraft | null; sessionId: string | null } = {
+      response:  responseText,
+      messages:  updatedMessages,
+      rfqDraft:  newDraft,
+      sessionId: newSessionId,
     }
 
     return Response.json(result)
