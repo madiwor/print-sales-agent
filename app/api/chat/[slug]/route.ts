@@ -6,6 +6,7 @@ import { handleTool } from '@/lib/agent/tool-handlers'
 import { checkRateLimit, getClientIp } from '@/lib/rate-limit'
 import { saveRFQ } from '@/lib/supabase/rfqs'
 import { upsertSession } from '@/lib/supabase/sessions'
+import { trackTokenUsage } from '@/lib/supabase/token-usage'
 import type { ChatRequest, ChatResponse, PortalInfo, RFQDraft } from '@/types/agent'
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
@@ -66,11 +67,11 @@ const EXTRACTION_TOOL: Anthropic.Tool = {
 
 async function extractRFQ(
   conversation: Anthropic.MessageParam[]
-): Promise<RFQDraft | null> {
+): Promise<{ draft: RFQDraft | null; inputTokens: number; outputTokens: number }> {
   const messages = conversation[0]?.role === 'assistant'
     ? conversation.slice(1)
     : conversation
-  if (messages.length === 0) return null
+  if (messages.length === 0) return { draft: null, inputTokens: 0, outputTokens: 0 }
   try {
     const response = await anthropic.messages.create({
       model:       EXTRACTION_MODEL,
@@ -83,13 +84,17 @@ async function extractRFQ(
     const toolUse = response.content.find(b => b.type === 'tool_use')
     if (!toolUse || toolUse.type !== 'tool_use') {
       console.error('[Extractor] No tool_use block in response')
-      return null
+      return { draft: null, inputTokens: response.usage.input_tokens, outputTokens: response.usage.output_tokens }
     }
     console.log('[Extractor] OK, ready_to_submit:', (toolUse.input as RFQDraft).ready_to_submit)
-    return toolUse.input as RFQDraft
+    return {
+      draft:        toolUse.input as RFQDraft,
+      inputTokens:  response.usage.input_tokens,
+      outputTokens: response.usage.output_tokens,
+    }
   } catch (err) {
     console.error('[Extractor] Error:', err)
-    return null
+    return { draft: null, inputTokens: 0, outputTokens: 0 }
   }
 }
 
@@ -225,12 +230,23 @@ export async function POST(
       { role: 'assistant', content: responseText },
     ]
 
-    // 2. Extraction call (parallel with submission if needed)
-    const [newDraft] = await Promise.all([
-      extractRFQ(updatedMessages),
-    ])
+    // 2. Extraction call
+    const { draft: newDraft, inputTokens: extractInput, outputTokens: extractOutput } = await extractRFQ(updatedMessages)
 
-    // 3. Submit if agent signaled
+    // 3. Log token usage for both calls (non-fatal, fire-and-forget)
+    const convUsage = convResponse.usage as Anthropic.Usage & {
+      cache_read_input_tokens?: number
+      cache_creation_input_tokens?: number
+    }
+    trackTokenUsage({
+      converterId:      (portalInfo as any).id ?? slug,
+      inputTokens:      (convUsage.input_tokens ?? 0) + extractInput,
+      outputTokens:     (convUsage.output_tokens ?? 0) + extractOutput,
+      cacheReadTokens:  convUsage.cache_read_input_tokens ?? 0,
+      cacheWriteTokens: convUsage.cache_creation_input_tokens ?? 0,
+    }).catch(err => console.error('[trackTokenUsage] Error (non-fatal):', err))
+
+    // 4. Submit if agent signaled
     console.log(`[chat/${slug}] shouldSubmit=${shouldSubmit} | rfqReady=${newDraft?.ready_to_submit ?? false}`)
     let rfqId: string | null = null
     if (shouldSubmit && newDraft && lead) {
@@ -244,7 +260,7 @@ export async function POST(
       rfqId = savedId ?? null
     }
 
-    // 4. Persist session (non-fatal)
+    // 5. Persist session (non-fatal)
     const newSessionId = await upsertSession({
       sessionId:     sessionId ?? null,
       converterSlug: slug,
