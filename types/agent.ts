@@ -24,6 +24,7 @@ export interface ChatResponse {
 }
 
 export interface PortalInfo {
+  id:             string
   company_name:   string
   agent_name:     string
   agent_language: string

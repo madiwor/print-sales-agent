@@ -18,6 +18,7 @@ export async function getPortalBySlug(slug: string): Promise<PortalInfo | null> 
 
   const cfg = data.converter_config as any
   return {
+    id:              data.id,
     company_name:    data.company_name,
     agent_name:      data.agent_name,
     agent_language:  data.agent_language,
