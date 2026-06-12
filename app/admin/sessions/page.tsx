@@ -23,7 +23,7 @@ export default async function SessionsPage({
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="border-b border-gray-200 text-gray-500">
-              <Th>Fecha</Th><Th>Email</Th><Th>Portal</Th><Th>Turnos</Th><Th>RFQ</Th><Th></Th>
+              <Th>Fecha</Th><Th>Email</Th><Th>Portal</Th><Th>Turnos</Th><Th>RFQ</Th><Th />
             </tr>
           </thead>
           <tbody>
@@ -66,9 +66,9 @@ export default async function SessionsPage({
   )
 }
 
-function Th({ children }: { children: React.ReactNode }) {
+function Th({ children }: { children?: React.ReactNode }) {
   return <th className="px-4 py-3 text-xs font-medium uppercase tracking-wide text-gray-500">{children}</th>
 }
-function Td({ children }: { children: React.ReactNode }) {
+function Td({ children }: { children?: React.ReactNode }) {
   return <td className="px-4 py-3 text-sm text-gray-700">{children}</td>
 }
