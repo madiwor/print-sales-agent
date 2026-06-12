@@ -26,6 +26,7 @@ export async function getPortalBySlug(slug: string): Promise<PortalInfo | null> 
     contact_email:   data.contact_email,
     contact_phone:   data.contact_phone ?? undefined,
     custom_greeting: data.custom_greeting ?? undefined,
+    products_knowledge: data.products_knowledge ?? undefined,
     materials: ((data.converter_materials as any[]) ?? [])
       .filter(m => m.active)
       .sort((a, b) => a.sort_order - b.sort_order)

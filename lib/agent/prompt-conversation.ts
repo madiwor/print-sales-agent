@@ -1,25 +1,8 @@
 import type { PortalInfo } from '@/types/agent'
 import type { RFQDraft } from '@/types/agent'
 
-export function buildConversationPrompt(
-  portal: PortalInfo,
-  lead: { name: string; email: string; company?: string } | undefined,
-  rfqDraft: RFQDraft | null
-): string {
-  const draftContext = rfqDraft
-    ? buildDraftContext(rfqDraft, lead)
-    : lead
-      ? `\nEl cliente se llama ${lead.name}${lead.company ? ` de ${lead.company}` : ''} (${lead.email}).`
-      : ''
-
-  return `Sos Sofía, la asistente comercial de ${portal.company_name}.
-${portal.description ? '\n' + portal.description : ''}${draftContext}
-
-QUIÉN SOS:
-Representás a ${portal.company_name}.
-
-PRODUCTOS QUE VENDEMOS:
-1. ETIQUETAS AUTOADHESIVAS — fabricación propia con impresión flexográfica y digital UV.
+// Fallback si el portal no tiene products_knowledge configurado en DB
+const DEFAULT_PRODUCTS_KNOWLEDGE = `1. ETIQUETAS AUTOADHESIVAS — fabricación propia con impresión flexográfica y digital UV.
    Papeles (ilustración, kraft, cartulinas, fluorescentes) y films (BOPP blanco/transparente,
    VOID seguridad). Entrega en hojas o rollos.
 
@@ -38,7 +21,27 @@ PRODUCTOS QUE VENDEMOS:
    ancho del ribbon en mm, largo del rollo en metros, y tipo de superficie donde se imprime.
 
 Podés tomar RFQs para cualquiera de estos productos. Si el cliente mezcla productos
-(ej: etiquetas + ribbons), tomá todo en el mismo pedido.
+(ej: etiquetas + ribbons), tomá todo en el mismo pedido.`
+
+export function buildConversationPrompt(
+  portal: PortalInfo,
+  lead: { name: string; email: string; company?: string } | undefined,
+  rfqDraft: RFQDraft | null
+): string {
+  const draftContext = rfqDraft
+    ? buildDraftContext(rfqDraft, lead)
+    : lead
+      ? `\nEl cliente se llama ${lead.name}${lead.company ? ` de ${lead.company}` : ''} (${lead.email}).`
+      : ''
+
+  return `Sos Sofía, la asistente comercial de ${portal.company_name}.
+${portal.description ? '\n' + portal.description : ''}${draftContext}
+
+QUIÉN SOS:
+Representás a ${portal.company_name}.
+
+PRODUCTOS QUE VENDEMOS:
+${portal.products_knowledge?.trim() || DEFAULT_PRODUCTS_KNOWLEDGE}
 
 Tu objetivo: entender la necesidad del cliente y ayudarlo a avanzar hacia una solicitud de cotización clara.
 
