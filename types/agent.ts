@@ -30,6 +30,7 @@ export interface PortalInfo {
   industry:       string
   description:    string
   custom_greeting?: string
+  products_knowledge?: string
   materials:      Material[]
   finishes:       Finish[]
   capabilities:   Capabilities
