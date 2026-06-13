@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { LogoutButton } from './_components/LogoutButton'
 
 export default async function PortalAdminLayout({
   children,
@@ -16,11 +17,12 @@ export default async function PortalAdminLayout({
           <div className="font-semibold text-gray-900 mt-0.5">Panel</div>
         </div>
         <nav className="flex flex-col gap-1 p-3">
-          <Link href={`/portal/${slug}/admin`} className="px-3 py-2 rounded-md hover:bg-gray-100 text-gray-700">Dashboard</Link>
-          <Link href={`/portal/${slug}/admin/rfqs`} className="px-3 py-2 rounded-md hover:bg-gray-100 text-gray-700">RFQs</Link>
+          <Link href={`/portal/${slug}/admin`}          className="px-3 py-2 rounded-md hover:bg-gray-100 text-gray-700">Dashboard</Link>
+          <Link href={`/portal/${slug}/admin/rfqs`}     className="px-3 py-2 rounded-md hover:bg-gray-100 text-gray-700">RFQs</Link>
           <Link href={`/portal/${slug}/admin/sessions`} className="px-3 py-2 rounded-md hover:bg-gray-100 text-gray-700">Sesiones</Link>
-          <Link href={`/portal/${slug}/admin/embed`} className="px-3 py-2 rounded-md hover:bg-gray-100 text-gray-700">Integrar</Link>
+          <Link href={`/portal/${slug}/admin/embed`}    className="px-3 py-2 rounded-md hover:bg-gray-100 text-gray-700">Integrar</Link>
         </nav>
+        <LogoutButton />
       </aside>
       <main className="flex-1 p-8 overflow-auto">{children}</main>
     </div>
