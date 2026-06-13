@@ -1,13 +1,13 @@
 import Link from 'next/link'
 
-export default function PortalAdminLayout({
+export default async function PortalAdminLayout({
   children,
   params,
 }: {
   children: React.ReactNode
-  params: { slug: string }
+  params: Promise<{ slug: string }>
 }) {
-  const slug = params.slug
+  const { slug } = await params
   return (
     <div className="flex min-h-screen bg-gray-50 text-sm">
       <aside className="w-52 shrink-0 bg-white border-r border-gray-200 flex flex-col">
