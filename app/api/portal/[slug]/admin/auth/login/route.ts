@@ -1,8 +1,8 @@
-import { createServerClient, type CookieMethodsServer } from '@supabase/ssr'
+import { createServerClient } from '@supabase/ssr'
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
-type CookieItem = Parameters<CookieMethodsServer['setAll']>[0][0]
+type CookieItem = { name: string; value: string; options?: Record<string, unknown> }
 
 export async function POST(
   request: NextRequest,
@@ -19,7 +19,7 @@ export async function POST(
     {
       cookies: {
         getAll() { return request.cookies.getAll() },
-        setAll(items: CookieItem[]) { cookiesToSet.push(...items) },
+        setAll(items) { items.forEach(i => cookiesToSet.push(i)) },
       },
     }
   )
@@ -39,6 +39,8 @@ export async function POST(
   }
 
   const response = NextResponse.json({ ok: true })
-  cookiesToSet.forEach(({ name, value, options }) => response.cookies.set(name, value, options))
+  cookiesToSet.forEach(({ name, value, options }) =>
+    response.cookies.set(name, value, options as any)
+  )
   return response
 }
