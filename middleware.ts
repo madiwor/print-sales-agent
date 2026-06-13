@@ -1,8 +1,10 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
-import { createServerClient } from '@supabase/ssr'
+import { createServerClient, type CookieOptions } from '@supabase/ssr'
 
 const SUPERADMIN_COOKIE = 'superadmin_token'
+
+type CookieItem = { name: string; value: string; options?: CookieOptions }
 
 export async function middleware(request: NextRequest) {
   const { pathname, searchParams } = request.nextUrl
@@ -36,7 +38,6 @@ export async function middleware(request: NextRequest) {
   if (portalMatch) {
     const slug = portalMatch[1]
 
-    // Login and auth API routes are public
     if (
       pathname.endsWith('/admin/login') ||
       pathname.includes('/admin/auth/')
@@ -46,19 +47,18 @@ export async function middleware(request: NextRequest) {
 
     const supabaseUrl  = process.env.SUPABASE_URL
     const supabaseAnon = process.env.SUPABASE_ANON_KEY
-    if (!supabaseUrl || !supabaseAnon) return NextResponse.next() // misconfigured = open in dev
+    if (!supabaseUrl || !supabaseAnon) return NextResponse.next()
 
-    // Build response early so Supabase can refresh session cookies onto it
     let response = NextResponse.next({ request })
 
     const supabase = createServerClient(supabaseUrl, supabaseAnon, {
       cookies: {
         getAll() { return request.cookies.getAll() },
-        setAll(cookiesToSet) {
+        setAll(cookiesToSet: CookieItem[]) {
           cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
           response = NextResponse.next({ request })
           cookiesToSet.forEach(({ name, value, options }) =>
-            response.cookies.set(name, value, options)
+            response.cookies.set(name, value, options as any)
           )
         },
       },
@@ -70,7 +70,6 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL(`/portal/${slug}/admin/login`, request.url))
     }
 
-    // Each user can only access their own portal
     if (user.user_metadata?.converter_slug !== slug) {
       return NextResponse.redirect(new URL(`/portal/${slug}/admin/login`, request.url))
     }
