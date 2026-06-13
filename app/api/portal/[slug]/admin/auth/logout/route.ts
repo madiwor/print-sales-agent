@@ -1,13 +1,15 @@
-import { createServerClient } from '@supabase/ssr'
+import { createServerClient, type CookieMethodsServer } from '@supabase/ssr'
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
+
+type CookieItem = Parameters<CookieMethodsServer['setAll']>[0][0]
 
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ slug: string }> }
 ) {
   const { slug } = await params
-  const cookiesToSet: Array<{ name: string; value: string; options: Record<string, unknown> }> = []
+  const cookiesToSet: CookieItem[] = []
 
   const supabase = createServerClient(
     process.env.SUPABASE_URL!,
@@ -15,9 +17,7 @@ export async function POST(
     {
       cookies: {
         getAll() { return request.cookies.getAll() },
-        setAll(items) {
-          items.forEach(item => cookiesToSet.push(item as typeof cookiesToSet[0]))
-        },
+        setAll(items: CookieItem[]) { cookiesToSet.push(...items) },
       },
     }
   )
@@ -25,6 +25,6 @@ export async function POST(
   await supabase.auth.signOut()
 
   const response = NextResponse.redirect(new URL(`/portal/${slug}/admin/login`, request.url))
-  cookiesToSet.forEach(({ name, value, options }) => response.cookies.set(name, value, options as any))
+  cookiesToSet.forEach(({ name, value, options }) => response.cookies.set(name, value, options))
   return response
 }

@@ -1,6 +1,8 @@
-import { createServerClient } from '@supabase/ssr'
+import { createServerClient, type CookieMethodsServer } from '@supabase/ssr'
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
+
+type CookieItem = Parameters<CookieMethodsServer['setAll']>[0][0]
 
 export async function POST(
   request: NextRequest,
@@ -9,7 +11,7 @@ export async function POST(
   const { slug } = await params
   const body = await request.json() as { email: string; password: string }
 
-  const cookiesToSet: Array<{ name: string; value: string; options: Record<string, unknown> }> = []
+  const cookiesToSet: CookieItem[] = []
 
   const supabase = createServerClient(
     process.env.SUPABASE_URL!,
@@ -17,9 +19,7 @@ export async function POST(
     {
       cookies: {
         getAll() { return request.cookies.getAll() },
-        setAll(items) {
-          items.forEach(item => cookiesToSet.push(item as typeof cookiesToSet[0]))
-        },
+        setAll(items: CookieItem[]) { cookiesToSet.push(...items) },
       },
     }
   )
@@ -33,13 +33,12 @@ export async function POST(
     return NextResponse.json({ error: 'Email o contraseña incorrectos' }, { status: 401 })
   }
 
-  // Verify user belongs to this portal
   if (data.user.user_metadata?.converter_slug !== slug) {
     await supabase.auth.signOut()
     return NextResponse.json({ error: 'Sin acceso a este portal' }, { status: 403 })
   }
 
   const response = NextResponse.json({ ok: true })
-  cookiesToSet.forEach(({ name, value, options }) => response.cookies.set(name, value, options as any))
+  cookiesToSet.forEach(({ name, value, options }) => response.cookies.set(name, value, options))
   return response
 }
