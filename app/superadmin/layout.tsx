@@ -10,6 +10,7 @@ export default function SuperadminLayout({ children }: { children: React.ReactNo
         </div>
         <nav className="flex flex-col gap-1 p-3">
           <Link href="/superadmin" className="px-3 py-2 rounded-md hover:bg-gray-100 text-gray-700">Dashboard</Link>
+          <Link href="/superadmin/portales" className="px-3 py-2 rounded-md hover:bg-gray-100 text-gray-700">Portales</Link>
           <Link href="/superadmin/rfqs" className="px-3 py-2 rounded-md hover:bg-gray-100 text-gray-700">RFQs</Link>
           <Link href="/superadmin/sessions" className="px-3 py-2 rounded-md hover:bg-gray-100 text-gray-700">Sesiones</Link>
         </nav>
