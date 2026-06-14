@@ -7,6 +7,7 @@ import { checkRateLimit, getClientIp } from '@/lib/rate-limit'
 import { saveRFQ } from '@/lib/supabase/rfqs'
 import { upsertSession } from '@/lib/supabase/sessions'
 import { trackTokenUsage } from '@/lib/supabase/token-usage'
+import { sendRFQEmail } from '@/lib/email/rfq-mailer'
 import type { ChatRequest, ChatResponse, PortalInfo, RFQDraft } from '@/types/agent'
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
@@ -98,55 +99,6 @@ async function extractRFQ(
   }
 }
 
-async function submitToFormspree(
-  rfqDraft: RFQDraft,
-  lead: { name: string; email: string; company?: string } | undefined,
-  portalInfo: PortalInfo
-): Promise<boolean> {
-  const endpoint = process.env.FORMSPREE_ENDPOINT
-  if (!endpoint) {
-    console.log('\n=== RFQ ENVIADA (no Formspree endpoint configured) ===')
-    console.log(JSON.stringify({ lead, rfqDraft }, null, 2))
-    console.log('=====================================================\n')
-    return true
-  }
-  const payload = {
-    _subject: `Nueva solicitud de cotización — ${portalInfo.company_name}`,
-    nombre:        lead?.name ?? 'No especificado',
-    email:         lead?.email ?? 'No especificado',
-    empresa:       rfqDraft.company_name ?? lead?.company ?? null,
-    tipo_producto: rfqDraft.product_type,
-    producto:      rfqDraft.product,
-    material:      rfqDraft.material,
-    medidas:       rfqDraft.width_mm && rfqDraft.height_mm ? `${rfqDraft.width_mm}×${rfqDraft.height_mm} mm` : null,
-    cantidad:      rfqDraft.quantity,
-    colores:       rfqDraft.colors,
-    acabado:       rfqDraft.finish,
-    entrega:       rfqDraft.delivery_format,
-    requerimientos: rfqDraft.special_requirements,
-    fecha_limite:  rfqDraft.deadline,
-    telefono:      rfqDraft.contact_phone ?? null,
-    tipo_impresora: (rfqDraft as any).printer_type ?? null,
-    tipo_ribbon:    (rfqDraft as any).ribbon_type ?? null,
-    ribbon_medidas: (rfqDraft as any).ribbon_width_mm ? `${(rfqDraft as any).ribbon_width_mm}mm × ${(rfqDraft as any).ribbon_length_m}m` : null,
-    impresora_marca_modelo: (rfqDraft as any).printer_brand_model ?? null,
-  }
-  console.log('[Formspree] Enviando a:', endpoint)
-  console.log('[Formspree] Payload:', JSON.stringify(payload))
-  try {
-    const res = await fetch(endpoint, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-      body: JSON.stringify(payload),
-    })
-    const responseBody = await res.text()
-    console.log('[Formspree] Status:', res.status, '| Response:', responseBody)
-    return res.ok
-  } catch (err) {
-    console.error('[Formspree] Error:', err)
-    return false
-  }
-}
 
 export async function POST(
   request: NextRequest,
@@ -250,14 +202,13 @@ export async function POST(
     console.log(`[chat/${slug}] shouldSubmit=${shouldSubmit} | rfqReady=${newDraft?.ready_to_submit ?? false}`)
     let rfqId: string | null = null
     if (shouldSubmit && newDraft && lead) {
-      const [, savedId] = await Promise.all([
-        submitToFormspree(newDraft, lead, portalInfo),
-        saveRFQ({ converterSlug: slug, lead, draft: newDraft }).catch(err => {
-          console.error('[saveRFQ] Error (non-fatal):', err)
-          return null
-        }),
-      ])
-      rfqId = savedId ?? null
+      rfqId = await saveRFQ({ converterSlug: slug, lead, draft: newDraft }).catch(err => {
+        console.error('[saveRFQ] Error (non-fatal):', err)
+        return null
+      }) ?? null
+      sendRFQEmail(newDraft, lead, portalInfo, slug, rfqId).catch(err =>
+        console.error('[sendRFQEmail] Error (non-fatal):', err)
+      )
     }
 
     // 5. Persist session (non-fatal)
