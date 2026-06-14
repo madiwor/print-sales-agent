@@ -179,3 +179,65 @@ export async function getMetrics(): Promise<AdminMetrics> {
     token_rows:      Object.values(byCompany),
   }
 }
+
+export interface AdminPortal {
+  id:                 string
+  slug:               string
+  company_name:       string
+  contact_email:      string
+  contact_phone:      string | null
+  description:        string | null
+  products_knowledge: string | null
+  status:             string
+  created_at:         string
+}
+
+export async function listPortales(): Promise<AdminPortal[]> {
+  const { data } = await supabase
+    .from('converters')
+    .select('id, slug, company_name, contact_email, contact_phone, description, status, created_at')
+    .order('created_at', { ascending: false })
+  return (data ?? []) as AdminPortal[]
+}
+
+export async function getPortalDetail(slug: string): Promise<AdminPortal | null> {
+  const { data } = await supabase
+    .from('converters')
+    .select('id, slug, company_name, contact_email, contact_phone, description, products_knowledge, status, created_at')
+    .eq('slug', slug)
+    .single()
+  return data as AdminPortal | null
+}
+
+export async function createPortal(input: {
+  slug:               string
+  company_name:       string
+  contact_email:      string
+  contact_phone?:     string | null
+  description?:       string | null
+  products_knowledge?: string | null
+  status:             string
+}): Promise<{ slug: string } | { error: string }> {
+  const { data, error } = await supabase
+    .from('converters')
+    .insert({
+      slug:               input.slug,
+      company_name:       input.company_name,
+      contact_email:      input.contact_email,
+      contact_phone:      input.contact_phone ?? null,
+      description:        input.description ?? null,
+      products_knowledge: input.products_knowledge ?? null,
+      status:             input.status,
+      agent_name:         'Sofía',
+      agent_language:     'es',
+    })
+    .select('id, slug')
+    .single()
+
+  if (error) return { error: error.message }
+
+  // create default converter_config
+  await supabase.from('converter_config').insert({ converter_id: data.id })
+
+  return { slug: data.slug }
+}
