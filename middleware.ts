@@ -6,7 +6,7 @@ const SUPERADMIN_COOKIE = 'superadmin_token'
 
 type CookieItem = { name: string; value: string; options?: CookieOptions }
 
-export async function proxy(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { pathname, searchParams } = request.nextUrl
 
   // ── Superadmin (Madiwor only) ─────────────────────────────────────────────
