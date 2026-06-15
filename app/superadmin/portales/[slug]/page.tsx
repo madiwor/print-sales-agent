@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { getPortalDetail } from '@/lib/supabase/admin'
+import { AddUsuarioForm } from './_components/AddUsuarioForm'
 
 export const dynamic = 'force-dynamic'
 
@@ -39,6 +40,10 @@ export default async function PortalDetailPage({ params }: { params: Promise<{ s
           <pre className="bg-white border border-gray-200 rounded-lg p-4 text-xs text-gray-700 whitespace-pre-wrap">{portal.products_knowledge}</pre>
         </div>
       )}
+
+      <div className="mb-8">
+        <AddUsuarioForm slug={slug} />
+      </div>
 
       <div className="flex gap-4">
         <Link href={`/superadmin/portales/${portal.slug}/editar`} className="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700">
