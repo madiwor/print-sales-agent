@@ -40,12 +40,15 @@ export default async function PortalDetailPage({ params }: { params: Promise<{ s
         </div>
       )}
 
-      <div className="flex gap-3">
-        <Link href={`/${portal.slug}/cotizar`} target="_blank" className="text-sm text-blue-600 hover:underline">
+      <div className="flex gap-4">
+        <Link href={`/superadmin/portales/${portal.slug}/editar`} className="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700">
+          Editar portal
+        </Link>
+        <Link href={`/${portal.slug}/cotizar`} target="_blank" className="px-4 py-2 border border-gray-200 text-sm rounded-lg hover:bg-gray-50 text-gray-700">
           Abrir agente →
         </Link>
-        <Link href="/superadmin/portales" className="text-sm text-gray-500 hover:underline">
-          ← Todos los portales
+        <Link href="/superadmin/portales" className="text-sm text-gray-500 self-center hover:underline">
+          ← Volver
         </Link>
       </div>
     </div>

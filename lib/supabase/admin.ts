@@ -241,3 +241,62 @@ export async function createPortal(input: {
 
   return { slug: data.slug }
 }
+
+export interface PortalConfig {
+  min_quantity:   number
+  max_width_mm:   number
+  max_colors:     number
+  lead_time_days: number
+}
+
+export async function getPortalConfig(slug: string): Promise<PortalConfig | null> {
+  const { data: converter } = await supabase
+    .from('converters').select('id').eq('slug', slug).single()
+  if (!converter) return null
+
+  const { data } = await supabase
+    .from('converter_config')
+    .select('min_quantity, max_width_mm, max_colors, lead_time_days')
+    .eq('converter_id', converter.id)
+    .single()
+  return data as PortalConfig | null
+}
+
+export async function updatePortal(
+  slug: string,
+  input: {
+    company_name?:       string
+    contact_email?:      string
+    contact_phone?:      string | null
+    description?:        string | null
+    products_knowledge?: string | null
+    status?:             string
+    min_quantity?:       number
+    max_width_mm?:       number
+    max_colors?:         number
+    lead_time_days?:     number
+  }
+): Promise<{ ok: true } | { error: string }> {
+  const { data: converter, error: convErr } = await supabase
+    .from('converters').select('id').eq('slug', slug).single()
+  if (convErr || !converter) return { error: 'Portal no encontrado' }
+
+  const { min_quantity, max_width_mm, max_colors, lead_time_days, ...converterFields } = input
+
+  const { error: updateErr } = await supabase
+    .from('converters').update(converterFields).eq('id', converter.id)
+  if (updateErr) return { error: updateErr.message }
+
+  const configFields: Partial<PortalConfig> = {}
+  if (min_quantity   != null) configFields.min_quantity   = min_quantity
+  if (max_width_mm   != null) configFields.max_width_mm   = max_width_mm
+  if (max_colors     != null) configFields.max_colors     = max_colors
+  if (lead_time_days != null) configFields.lead_time_days = lead_time_days
+
+  if (Object.keys(configFields).length > 0) {
+    await supabase.from('converter_config')
+      .update(configFields).eq('converter_id', converter.id)
+  }
+
+  return { ok: true }
+}
