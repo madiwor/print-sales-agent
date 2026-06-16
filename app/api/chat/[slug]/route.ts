@@ -8,6 +8,7 @@ import { saveRFQ } from '@/lib/supabase/rfqs'
 import { upsertSession } from '@/lib/supabase/sessions'
 import { trackTokenUsage } from '@/lib/supabase/token-usage'
 import { sendRFQEmail } from '@/lib/email/rfq-mailer'
+import { sendRFQWebhook } from '@/lib/webhook/send-rfq-webhook'
 import type { ChatRequest, ChatResponse, PortalInfo, RFQDraft } from '@/types/agent'
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
@@ -209,6 +210,11 @@ export async function POST(
       sendRFQEmail(newDraft, lead, portalInfo, slug, rfqId).catch(err =>
         console.error('[sendRFQEmail] Error (non-fatal):', err)
       )
+      if (portalInfo.webhook_url) {
+        sendRFQWebhook(portalInfo.webhook_url, portalInfo.id, slug, rfqId, lead, newDraft).catch(err =>
+          console.error('[sendRFQWebhook] Error (non-fatal):', err)
+        )
+      }
     }
 
     // 5. Persist session (non-fatal)

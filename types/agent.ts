@@ -35,6 +35,7 @@ export interface PortalInfo {
   tone?:               'formal' | 'semi-formal' | 'informal'
   extra_instructions?: string
   restrictions?:       string
+  webhook_url?:        string
   materials:      Material[]
   finishes:       Finish[]
   capabilities:   Capabilities

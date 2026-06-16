@@ -17,6 +17,7 @@ interface PortalFormData {
   tone:                string
   extra_instructions:  string
   restrictions:        string
+  webhook_url:         string
 }
 
 export function EditPortalForm({ slug, initial }: { slug: string; initial: PortalFormData }) {
@@ -46,6 +47,7 @@ export function EditPortalForm({ slug, initial }: { slug: string; initial: Porta
       tone:                form.get('tone'),
       extra_instructions:  form.get('extra_instructions') || null,
       restrictions:        form.get('restrictions') || null,
+      webhook_url:         form.get('webhook_url') || null,
     }
 
     const res = await fetch(`/api/superadmin/portales/${slug}`, {
@@ -120,6 +122,9 @@ export function EditPortalForm({ slug, initial }: { slug: string; initial: Porta
           </Field>
           <Field label="Restricciones" hint="Ej: 'No cotizar menos de 500 unidades. No ofrecer envío internacional.'">
             <textarea name="restrictions" rows={3} defaultValue={initial.restrictions} className={input} placeholder="Restricciones o limitaciones del agente..." />
+          </Field>
+          <Field label="Webhook URL" hint="Se invoca con POST JSON al completarse cada RFQ. Ej: endpoint de HubSpot, Zoho, n8n.">
+            <input name="webhook_url" type="url" defaultValue={initial.webhook_url} className={input} placeholder="https://hooks.ejemplo.com/rfq" />
           </Field>
         </div>
       </div>
