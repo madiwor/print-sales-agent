@@ -8,7 +8,7 @@ export default async function PortalEmbedPage({
   params: Promise<{ slug: string }>
 }) {
   const { slug } = await params
-  const base = process.env.NEXT_PUBLIC_APP_URL ?? ''
+  const base = (process.env.NEXT_PUBLIC_APP_URL ?? '').replace(/\/$/, '')
   const chatUrl = `${base}/${slug}/cotizar`
 
   return (
