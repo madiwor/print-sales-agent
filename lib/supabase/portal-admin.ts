@@ -27,6 +27,7 @@ export interface PortalMetrics {
   sessions_week:   number
   conversion_rate: number
   recent_rfqs:     PortalRFQ[]
+  rfqs_by_status:  Record<string, number>
 }
 
 async function getConverterId(slug: string): Promise<string | null> {
@@ -148,23 +149,29 @@ export async function getPortalSession(
 
 export async function getPortalMetrics(slug: string): Promise<PortalMetrics> {
   const converterId = await getConverterId(slug)
-  if (!converterId) return { rfqs_today: 0, rfqs_week: 0, rfqs_month: 0, sessions_week: 0, conversion_rate: 0, recent_rfqs: [] }
+  if (!converterId) return { rfqs_today: 0, rfqs_week: 0, rfqs_month: 0, sessions_week: 0, conversion_rate: 0, recent_rfqs: [], rfqs_by_status: {} }
 
   const now   = new Date()
   const today = now.toISOString().slice(0, 10)
   const week  = new Date(now.getTime() - 7  * 86400000).toISOString().slice(0, 10)
   const month = new Date(now.getTime() - 30 * 86400000).toISOString().slice(0, 10)
 
-  const [rfqToday, rfqWeek, rfqMonth, sessWeek, recent] = await Promise.all([
+  const [rfqToday, rfqWeek, rfqMonth, sessWeek, recent, allStatuses] = await Promise.all([
     supabase.from('rfqs').select('id', { count: 'exact', head: true }).eq('converter_id', converterId).gte('created_at', today),
     supabase.from('rfqs').select('id', { count: 'exact', head: true }).eq('converter_id', converterId).gte('created_at', week),
     supabase.from('rfqs').select('id', { count: 'exact', head: true }).eq('converter_id', converterId).gte('created_at', month),
     supabase.from('agent_sessions').select('id, rfq_id').eq('converter_id', converterId).gte('created_at', week),
     supabase.from('rfqs').select('id, created_at, contact_name, contact_email, contact_company, status, specs').eq('converter_id', converterId).order('created_at', { ascending: false }).limit(5),
+    supabase.from('rfqs').select('status').eq('converter_id', converterId),
   ])
 
   const sessTotal     = (sessWeek.data ?? []).length
   const sessConverted = (sessWeek.data ?? []).filter((s: any) => s.rfq_id).length
+
+  const rfqs_by_status: Record<string, number> = {}
+  for (const r of (allStatuses.data ?? [])) {
+    rfqs_by_status[r.status] = (rfqs_by_status[r.status] ?? 0) + 1
+  }
 
   return {
     rfqs_today:      rfqToday.count  ?? 0,
@@ -173,5 +180,6 @@ export async function getPortalMetrics(slug: string): Promise<PortalMetrics> {
     sessions_week:   sessTotal,
     conversion_rate: sessTotal > 0 ? Math.round((sessConverted / sessTotal) * 100) : 0,
     recent_rfqs:     (recent.data ?? []) as PortalRFQ[],
+    rfqs_by_status,
   }
 }
