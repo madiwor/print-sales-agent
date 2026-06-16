@@ -35,6 +35,7 @@ export default async function EditPortalPage({ params }: { params: Promise<{ slu
           tone:                (portal as any).tone ?? 'semi-formal',
           extra_instructions:  (portal as any).extra_instructions ?? '',
           restrictions:        (portal as any).restrictions ?? '',
+          webhook_url:         (portal as any).webhook_url ?? '',
         }}
       />
     </div>

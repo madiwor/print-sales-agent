@@ -31,6 +31,7 @@ export async function getPortalBySlug(slug: string): Promise<PortalInfo | null> 
     tone:                data.tone ?? 'semi-formal',
     extra_instructions:  data.extra_instructions ?? undefined,
     restrictions:        data.restrictions ?? undefined,
+    webhook_url:         data.webhook_url ?? undefined,
     materials: ((data.converter_materials as any[]) ?? [])
       .filter(m => m.active)
       .sort((a, b) => a.sort_order - b.sort_order)

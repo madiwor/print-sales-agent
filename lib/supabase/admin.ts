@@ -278,6 +278,7 @@ export async function updatePortal(
     tone?:                string
     extra_instructions?:  string | null
     restrictions?:        string | null
+    webhook_url?:         string | null
   }
 ): Promise<{ ok: true } | { error: string }> {
   const { data: converter, error: convErr } = await supabase
