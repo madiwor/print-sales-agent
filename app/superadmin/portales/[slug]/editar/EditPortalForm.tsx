@@ -50,7 +50,7 @@ export function EditPortalForm({ slug, initial }: { slug: string; initial: Porta
       webhook_url:         form.get('webhook_url') || null,
     }
 
-    const res = await fetch(`/api/superadmin/portales/${slug}`, {
+    const res = await fetch(`/superadmin/api/portales/${slug}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
