@@ -32,6 +32,9 @@ export interface PortalInfo {
   description:    string
   custom_greeting?: string
   products_knowledge?: string
+  tone?:               'formal' | 'semi-formal' | 'informal'
+  extra_instructions?: string
+  restrictions?:       string
   materials:      Material[]
   finishes:       Finish[]
   capabilities:   Capabilities

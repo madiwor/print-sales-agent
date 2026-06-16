@@ -27,11 +27,14 @@ export default async function EditPortalPage({ params }: { params: Promise<{ slu
           contact_phone:      portal.contact_phone ?? '',
           description:        portal.description ?? '',
           products_knowledge: portal.products_knowledge ?? '',
-          status:             portal.status,
-          min_quantity:       String(config?.min_quantity ?? 0),
-          max_width_mm:       String(config?.max_width_mm ?? 320),
-          max_colors:         String(config?.max_colors ?? 8),
-          lead_time_days:     String(config?.lead_time_days ?? 10),
+          status:              portal.status,
+          min_quantity:        String(config?.min_quantity ?? 0),
+          max_width_mm:        String(config?.max_width_mm ?? 320),
+          max_colors:          String(config?.max_colors ?? 8),
+          lead_time_days:      String(config?.lead_time_days ?? 10),
+          tone:                (portal as any).tone ?? 'semi-formal',
+          extra_instructions:  (portal as any).extra_instructions ?? '',
+          restrictions:        (portal as any).restrictions ?? '',
         }}
       />
     </div>

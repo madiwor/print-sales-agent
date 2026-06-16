@@ -4,16 +4,19 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 
 interface PortalFormData {
-  company_name:       string
-  contact_email:      string
-  contact_phone:      string
-  description:        string
-  products_knowledge: string
-  status:             string
-  min_quantity:       string
-  max_width_mm:       string
-  max_colors:         string
-  lead_time_days:     string
+  company_name:        string
+  contact_email:       string
+  contact_phone:       string
+  description:         string
+  products_knowledge:  string
+  status:              string
+  min_quantity:        string
+  max_width_mm:        string
+  max_colors:          string
+  lead_time_days:      string
+  tone:                string
+  extra_instructions:  string
+  restrictions:        string
 }
 
 export function EditPortalForm({ slug, initial }: { slug: string; initial: PortalFormData }) {
@@ -34,12 +37,15 @@ export function EditPortalForm({ slug, initial }: { slug: string; initial: Porta
       contact_email:      form.get('contact_email'),
       contact_phone:      form.get('contact_phone') || null,
       description:        form.get('description') || null,
-      products_knowledge: form.get('products_knowledge') || null,
-      status:             form.get('status'),
-      min_quantity:       Number(form.get('min_quantity')),
-      max_width_mm:       Number(form.get('max_width_mm')),
-      max_colors:         Number(form.get('max_colors')),
-      lead_time_days:     Number(form.get('lead_time_days')),
+      products_knowledge:  form.get('products_knowledge') || null,
+      status:              form.get('status'),
+      min_quantity:        Number(form.get('min_quantity')),
+      max_width_mm:        Number(form.get('max_width_mm')),
+      max_colors:          Number(form.get('max_colors')),
+      lead_time_days:      Number(form.get('lead_time_days')),
+      tone:                form.get('tone'),
+      extra_instructions:  form.get('extra_instructions') || null,
+      restrictions:        form.get('restrictions') || null,
     }
 
     const res = await fetch(`/api/superadmin/portales/${slug}`, {
@@ -95,6 +101,25 @@ export function EditPortalForm({ slug, initial }: { slug: string; initial: Porta
           </Field>
           <Field label="Tiempo de entrega (días)">
             <input name="lead_time_days" type="number" min={1} defaultValue={initial.lead_time_days} className={input} />
+          </Field>
+        </div>
+      </div>
+
+      <div className="border-t border-gray-100 pt-5">
+        <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-4">Comportamiento del agente</p>
+        <div className="flex flex-col gap-4">
+          <Field label="Tono">
+            <select name="tone" defaultValue={initial.tone} className={input}>
+              <option value="formal">Formal — profesional y respetuoso</option>
+              <option value="semi-formal">Semi-formal — natural y directo (recomendado)</option>
+              <option value="informal">Informal — relajado y cercano</option>
+            </select>
+          </Field>
+          <Field label="Instrucciones adicionales" hint="Se inyectan en el prompt. Ej: 'Siempre mencioná el tiempo de entrega express disponible.'">
+            <textarea name="extra_instructions" rows={4} defaultValue={initial.extra_instructions} className={input} placeholder="Instrucciones específicas para este portal..." />
+          </Field>
+          <Field label="Restricciones" hint="Ej: 'No cotizar menos de 500 unidades. No ofrecer envío internacional.'">
+            <textarea name="restrictions" rows={3} defaultValue={initial.restrictions} className={input} placeholder="Restricciones o limitaciones del agente..." />
           </Field>
         </div>
       </div>
