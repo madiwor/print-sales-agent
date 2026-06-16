@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { getPortalUser } from '@/lib/supabase/portal-auth'
 import { listPortalRFQs } from '@/lib/supabase/portal-admin'
+import { ExportButton } from './_components/ExportButton'
 
 export const dynamic = 'force-dynamic'
 
@@ -30,7 +31,10 @@ export default async function PortalRFQsPage({
 
   return (
     <div>
-      <h1 className="text-xl font-semibold text-gray-900 mb-6">RFQs <span className="text-gray-400 font-normal text-base">({total})</span></h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-xl font-semibold text-gray-900">RFQs <span className="text-gray-400 font-normal text-base">({total})</span></h1>
+        <ExportButton slug={slug} status={sp.status} />
+      </div>
 
       <div className="overflow-x-auto bg-white rounded-lg border border-gray-200">
         <table className="w-full text-left border-collapse">
