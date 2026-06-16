@@ -37,6 +37,28 @@ export default async function PortalDashboard({ params }: { params: Promise<{ sl
         <StatCard label="Conversión"   value={`${m.conversion_rate}%`} icon="🎯" sub={`${m.sessions_week} sesiones`} />
       </div>
 
+      {/* RFQs por estado */}
+      <div className="bg-white rounded-xl border border-gray-200 p-5 mb-6">
+        <h2 className="font-medium text-gray-800 mb-4">RFQs por estado</h2>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          {[
+            { key: 'submitted',   label: 'Recibidas',   color: 'bg-blue-50 text-blue-700 border-blue-100' },
+            { key: 'in_progress', label: 'En proceso',  color: 'bg-yellow-50 text-yellow-700 border-yellow-100' },
+            { key: 'quoted',      label: 'Cotizadas',   color: 'bg-purple-50 text-purple-700 border-purple-100' },
+            { key: 'closed',      label: 'Cerradas',    color: 'bg-gray-50 text-gray-600 border-gray-200' },
+          ].map(({ key, label, color }) => (
+            <Link
+              key={key}
+              href={`/portal/${slug}/admin/rfqs?status=${key}`}
+              className={`flex flex-col items-center py-3 rounded-lg border ${color} hover:opacity-80 transition-opacity`}
+            >
+              <span className="text-2xl font-semibold">{m.rfqs_by_status[key] ?? 0}</span>
+              <span className="text-xs mt-0.5">{label}</span>
+            </Link>
+          ))}
+        </div>
+      </div>
+
       <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
         <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
           <h2 className="font-medium text-gray-800">Últimas solicitudes</h2>
