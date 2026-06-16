@@ -23,7 +23,7 @@ export async function middleware(request: NextRequest) {
         httpOnly: true,
         sameSite: 'lax',
         maxAge: 60 * 60 * 8,
-        path: '/superadmin',
+        path: '/',
       })
       return res
     }
