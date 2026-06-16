@@ -22,6 +22,7 @@ export function ContactModal({ open, onClose }: { open: boolean; onClose: () => 
       ref={dialogRef}
       onClose={onClose}
       className="w-full max-w-lg rounded-2xl p-0 shadow-2xl backdrop:bg-black/40 border-0"
+      style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', margin: 0 }}
     >
       <div className="p-8">
         <div className="flex items-start justify-between mb-6">
