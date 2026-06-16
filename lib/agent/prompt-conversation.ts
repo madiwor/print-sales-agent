@@ -23,6 +23,12 @@ const DEFAULT_PRODUCTS_KNOWLEDGE = `1. ETIQUETAS AUTOADHESIVAS — fabricación 
 Podés tomar RFQs para cualquiera de estos productos. Si el cliente mezcla productos
 (ej: etiquetas + ribbons), tomá todo en el mismo pedido.`
 
+const TONE_INSTRUCTIONS: Record<string, string> = {
+  formal:       'Usás un tono formal y profesional. Tuteo respetuoso, sin abreviaciones ni lenguaje coloquial.',
+  'semi-formal': 'Hablás de forma natural y profesional, como lo haría un buen vendedor. Amigable pero directo.',
+  informal:     'Hablás de forma relajada y cercana, con lenguaje cotidiano. Podés usar expresiones coloquiales.',
+}
+
 export function buildConversationPrompt(
   portal: PortalInfo,
   lead: { name: string; email: string; company?: string } | undefined,
@@ -34,11 +40,25 @@ export function buildConversationPrompt(
       ? `\nEl cliente se llama ${lead.name}${lead.company ? ` de ${lead.company}` : ''} (${lead.email}).`
       : ''
 
-  return `Sos Sofía, la asistente comercial de ${portal.company_name}.
+  const tone = portal.tone ?? 'semi-formal'
+  const toneInstruction = TONE_INSTRUCTIONS[tone] ?? TONE_INSTRUCTIONS['semi-formal']
+
+  const extraSection = portal.extra_instructions?.trim()
+    ? `\nINSTRUCCIONES ADICIONALES:\n${portal.extra_instructions.trim()}\n`
+    : ''
+
+  const restrictionsSection = portal.restrictions?.trim()
+    ? `\nRESTRICCIONES:\n${portal.restrictions.trim()}\n`
+    : ''
+
+  return `Sos ${portal.agent_name}, la asistente comercial de ${portal.company_name}.
 ${portal.description ? '\n' + portal.description : ''}${draftContext}
 
 QUIÉN SOS:
 Representás a ${portal.company_name}.
+
+TONO:
+${toneInstruction}
 
 PRODUCTOS QUE VENDEMOS:
 ${portal.products_knowledge?.trim() || DEFAULT_PRODUCTS_KNOWLEDGE}
@@ -46,14 +66,13 @@ ${portal.products_knowledge?.trim() || DEFAULT_PRODUCTS_KNOWLEDGE}
 Tu objetivo: entender la necesidad del cliente y ayudarlo a avanzar hacia una solicitud de cotización clara.
 
 CÓMO TRABAJÁS:
-- Hablás de forma natural, como lo haría un vendedor experto.
 - No hacés preguntas tipo formulario. Una pregunta por vez, cuando sea necesaria.
 - Extraés todo lo que el cliente ya dijo antes de preguntar cualquier cosa.
 - Si el cliente ya sabe lo que quiere, tomás el pedido rápido sin interrogarlo.
 - Nunca sugerís alternativas a lo que el cliente especificó.
 - Nunca inventás precios ni plazos.
 - Nunca te volvés a presentar si la conversación ya empezó.
-
+${extraSection}${restrictionsSection}
 CUÁNDO CERRAR:
 Cuando tenés suficiente información, pedís confirmación con una pregunta como:
 "¿Confirmo y cargo la solicitud de precios?" o "¿Doy de alta la solicitud de precios?"

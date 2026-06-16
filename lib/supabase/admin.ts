@@ -265,16 +265,19 @@ export async function getPortalConfig(slug: string): Promise<PortalConfig | null
 export async function updatePortal(
   slug: string,
   input: {
-    company_name?:       string
-    contact_email?:      string
-    contact_phone?:      string | null
-    description?:        string | null
-    products_knowledge?: string | null
-    status?:             string
-    min_quantity?:       number
-    max_width_mm?:       number
-    max_colors?:         number
-    lead_time_days?:     number
+    company_name?:        string
+    contact_email?:       string
+    contact_phone?:       string | null
+    description?:         string | null
+    products_knowledge?:  string | null
+    status?:              string
+    min_quantity?:        number
+    max_width_mm?:        number
+    max_colors?:          number
+    lead_time_days?:      number
+    tone?:                string
+    extra_instructions?:  string | null
+    restrictions?:        string | null
   }
 ): Promise<{ ok: true } | { error: string }> {
   const { data: converter, error: convErr } = await supabase
