@@ -14,7 +14,7 @@ export function AddUsuarioForm({ slug }: { slug: string }) {
     setSuccess(false)
     setError(null)
 
-    const res = await fetch(`/api/superadmin/portales/${slug}/usuarios`, {
+    const res = await fetch(`/superadmin/api/portales/${slug}/usuarios`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email }),

@@ -24,7 +24,7 @@ export default function NuevoPortalPage() {
       status:             form.get('status'),
     }
 
-    const res = await fetch('/api/superadmin/portales', {
+    const res = await fetch('/superadmin/api/portales', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
