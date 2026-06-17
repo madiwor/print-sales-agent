@@ -200,13 +200,38 @@ export async function listPortales(): Promise<AdminPortal[]> {
   return (data ?? []) as AdminPortal[]
 }
 
-export async function getPortalDetail(slug: string): Promise<AdminPortal | null> {
+export interface AdminPortalDetail extends AdminPortal {
+  tone:               string | null
+  extra_instructions: string | null
+  restrictions:       string | null
+  webhook_url:        string | null
+  min_quantity:       number | null
+  max_width_mm:       number | null
+  max_colors:         number | null
+  lead_time_days:     number | null
+}
+
+export async function getPortalDetail(slug: string): Promise<AdminPortalDetail | null> {
   const { data } = await supabase
     .from('converters')
-    .select('id, slug, company_name, contact_email, contact_phone, description, products_knowledge, status, created_at')
+    .select('id, slug, company_name, contact_email, contact_phone, description, products_knowledge, tone, extra_instructions, restrictions, webhook_url, status, created_at')
     .eq('slug', slug)
     .single()
-  return data as AdminPortal | null
+  if (!data) return null
+
+  const { data: cfg } = await supabase
+    .from('converter_config')
+    .select('min_quantity, max_width_mm, max_colors, lead_time_days')
+    .eq('converter_id', (data as any).id)
+    .single()
+
+  return {
+    ...(data as any),
+    min_quantity:   cfg?.min_quantity   ?? null,
+    max_width_mm:   cfg?.max_width_mm   ?? null,
+    max_colors:     cfg?.max_colors     ?? null,
+    lead_time_days: cfg?.lead_time_days ?? null,
+  } as AdminPortalDetail
 }
 
 export async function createPortal(input: {

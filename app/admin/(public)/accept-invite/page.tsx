@@ -44,7 +44,8 @@ export default function AcceptInvitePage() {
         return
       }
 
-      router.replace(`/portal/${converterSlug}/admin`)
+      // Redirect to set-password so the user can log in again in the future
+      router.replace(`/admin/set-password?portal=${converterSlug}`)
     }
 
     processInvite()
