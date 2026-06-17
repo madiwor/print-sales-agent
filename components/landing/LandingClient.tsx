@@ -62,12 +62,20 @@ export function LandingClient() {
           <span className="font-bold text-lg tracking-tight">
             madiwor<span className="text-blue-600">/agents</span>
           </span>
+          <div className="flex items-center gap-5">
+          <Link
+            href="/admin/login"
+            className="text-sm font-medium text-neutral-400 hover:text-neutral-600 transition-colors"
+          >
+            Acceder al panel
+          </Link>
           <button
             onClick={() => setContactOpen(true)}
             className="text-sm font-medium text-neutral-600 hover:text-neutral-900 transition-colors"
           >
             Contacto
           </button>
+          </div>
         </div>
       </header>
 

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { sendInviteEmail } from '@/lib/email/invite-mailer'
 
 const SUPERADMIN_COOKIE = 'superadmin_token'
 
@@ -10,8 +11,8 @@ function isAuthorized(request: NextRequest): boolean {
 }
 
 function getAdminClient() {
-  const url  = process.env.SUPABASE_URL
-  const key  = process.env.SUPABASE_SERVICE_ROLE_KEY
+  const url = process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY
   if (!url || !key) return null
   return createClient(url, key, { auth: { autoRefreshToken: false, persistSession: false } })
 }
@@ -36,24 +37,46 @@ export async function POST(
     return NextResponse.json({ error: 'Supabase no configurado' }, { status: 500 })
   }
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? ''
+  // Get company name for the invite email
+  const { data: converter } = await supabase
+    .from('converters')
+    .select('company_name')
+    .eq('slug', slug)
+    .single()
 
-  const { data, error } = await supabase.auth.admin.inviteUserByEmail(email, {
-    redirectTo: `${appUrl}/portal/${slug}/admin`,
-    data: {
-      converter_slug: slug,
-      role:           'portal_admin',
+  const companyName = converter?.company_name ?? slug
+
+  const appUrl = (process.env.NEXT_PUBLIC_APP_URL ?? '').replace(/\/$/, '')
+
+  // Generate invite link instead of sending Supabase's default email
+  const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
+    type: 'invite',
+    email,
+    options: {
+      redirectTo: `${appUrl}/admin/accept-invite`,
+      data: {
+        converter_slug: slug,
+        role: 'portal_admin',
+      },
     },
   })
 
-  if (error) {
-    const isDuplicate = error.message.toLowerCase().includes('already registered') ||
-                        error.message.toLowerCase().includes('already been registered')
+  if (linkError) {
+    const isDuplicate =
+      linkError.message.toLowerCase().includes('already registered') ||
+      linkError.message.toLowerCase().includes('already been registered')
     return NextResponse.json(
-      { error: isDuplicate ? `El email ${email} ya tiene una cuenta` : error.message },
+      { error: isDuplicate ? `El email ${email} ya tiene una cuenta` : linkError.message },
       { status: isDuplicate ? 409 : 500 }
     )
   }
 
-  return NextResponse.json({ id: data.user.id }, { status: 201 })
+  const inviteLink = linkData.properties.action_link
+
+  const { ok, error: mailError } = await sendInviteEmail(email, companyName, inviteLink)
+  if (!ok) {
+    return NextResponse.json({ error: `Error al enviar email: ${mailError}` }, { status: 500 })
+  }
+
+  return NextResponse.json({ ok: true }, { status: 201 })
 }
