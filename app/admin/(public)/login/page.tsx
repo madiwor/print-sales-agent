@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { createBrowserClient } from '@supabase/ssr'
 
 export default function AdminLoginPage() {
   const router = useRouter()
@@ -16,29 +15,20 @@ export default function AdminLoginPage() {
     setLoading(true)
     setError(null)
 
-    const supabase = createBrowserClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    )
+    const res = await fetch('/api/admin/find-portal', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    })
 
-    // Look up the user to find their converter_slug
-    // We do a sign-in with OTP (magic link) so we don't expose the password page
-    // But since the portal login uses email+password, we just redirect to the right login page
-    const { data, error: fetchError } = await supabase
-      .from('converters')
-      .select('slug')
-      .eq('contact_email', email.toLowerCase().trim())
-      .single()
-
-    if (fetchError || !data) {
-      // Try looking up via auth user metadata - requires a different approach.
-      // Fall back to asking the user to go to their specific portal.
-      setError('No encontramos un portal asociado a ese email. Si sos admin de un portal, ingresá directamente en /portal/[nombre]/admin/login.')
+    if (!res.ok) {
+      setError('No encontramos un portal asociado a ese email.')
       setLoading(false)
       return
     }
 
-    router.push(`/portal/${data.slug}/admin/login?email=${encodeURIComponent(email)}`)
+    const { slug } = await res.json()
+    router.push(`/portal/${slug}/admin/login?email=${encodeURIComponent(email)}`)
   }
 
   return (
