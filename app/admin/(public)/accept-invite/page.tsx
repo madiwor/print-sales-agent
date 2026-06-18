@@ -16,14 +16,14 @@ export default function AcceptInvitePage() {
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
       )
 
-      // Supabase puts the tokens in the URL hash after redirect
       const hash = window.location.hash.substring(1)
       const params = new URLSearchParams(hash)
       const accessToken  = params.get('access_token')
       const refreshToken = params.get('refresh_token')
+      const tokenType    = params.get('type')
 
-      if (!accessToken || !refreshToken) {
-        setErrorMsg('Link inválido o expirado. Pedile al administrador que te reenvíe la invitación.')
+      if (!accessToken || !refreshToken || tokenType !== 'invite') {
+        setErrorMsg('Esta página solo es accesible desde el link de invitación enviado por email.')
         setStatus('error')
         return
       }
