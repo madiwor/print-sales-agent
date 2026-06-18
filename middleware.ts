@@ -33,6 +33,41 @@ export async function middleware(request: NextRequest) {
     return new NextResponse('Unauthorized', { status: 401 })
   }
 
+  // ── Legacy /admin area (Supabase Auth) ───────────────────────────────────
+  if (pathname.startsWith('/admin')) {
+    const publicAdminPaths = ['/admin/login', '/admin/accept-invite', '/admin/set-password']
+    if (publicAdminPaths.some(p => pathname === p || pathname.startsWith(p + '/'))) {
+      return NextResponse.next()
+    }
+
+    const supabaseUrl  = process.env.SUPABASE_URL
+    const supabaseAnon = process.env.SUPABASE_ANON_KEY
+    if (!supabaseUrl || !supabaseAnon) return NextResponse.next()
+
+    let response = NextResponse.next({ request })
+
+    const supabase = createServerClient(supabaseUrl, supabaseAnon, {
+      cookies: {
+        getAll() { return request.cookies.getAll() },
+        setAll(cookiesToSet: CookieItem[]) {
+          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
+          response = NextResponse.next({ request })
+          cookiesToSet.forEach(({ name, value, options }) =>
+            response.cookies.set(name, value, options as any)
+          )
+        },
+      },
+    })
+
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) {
+      return NextResponse.redirect(new URL('/admin/login', request.url))
+    }
+
+    return response
+  }
+
   // ── Portal client admin (Supabase Auth) ───────────────────────────────────
   const portalMatch = pathname.match(/^\/portal\/([^/]+)\/admin/)
   if (portalMatch) {
@@ -84,6 +119,8 @@ export const config = {
   matcher: [
     '/superadmin',
     '/superadmin/:path*',
+    '/admin',
+    '/admin/:path*',
     '/portal/:slug/admin',
     '/portal/:slug/admin/:path*',
   ],
