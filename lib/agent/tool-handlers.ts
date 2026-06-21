@@ -92,7 +92,7 @@ function checkFeasibilityLogic(specs: Record<string, unknown>, portal: PortalInf
   const colors = specs.colors as number | undefined
   if (colors !== undefined && colors > portal.capabilities.max_colors) {
     issues.push(
-      `El máximo de colores es ${portal.capabilities.max_colors}. Soicitás ${colors} colores.`
+      `El máximo de colores es ${portal.capabilities.max_colors}. Solicitás ${colors} colores.`
     )
   }
 
