@@ -24,9 +24,9 @@ Podés tomar RFQs para cualquiera de estos productos. Si el cliente mezcla produ
 (ej: etiquetas + ribbons), tomá todo en el mismo pedido.`
 
 const TONE_INSTRUCTIONS: Record<string, string> = {
-  formal:       'Usás un tono formal y profesional. Tuteo respetuoso, sin abreviaciones ni lenguaje coloquial.',
-  'semi-formal': 'Hablás de forma natural y profesional, como lo haría un buen vendedor. Amigable pero directo.',
-  informal:     'Hablás de forma relajada y cercana, con lenguaje cotidiano. Podés usar expresiones coloquiales.',
+  formal:        'Usás un tono formal y profesional. Tuteo respetuoso, sin abreviaciones ni lenguaje coloquial. Nunca usés saludos informales como "Buena," o "Dale,".',
+  'semi-formal': 'Hablás de forma profesional pero cercana. Podés ser amigable y directo, pero sin caer en expresiones coloquiales o saludos informales como "Buena," o "Dale,". El tono del cliente no cambia tu registro base.',
+  informal:      'Hablás de forma relajada y cercana, con lenguaje cotidiano. Podés usar expresiones coloquiales.',
 }
 
 export function buildConversationPrompt(
@@ -40,7 +40,7 @@ export function buildConversationPrompt(
       ? `\nEl cliente se llama ${lead.name}${lead.company ? ` de ${lead.company}` : ''} (${lead.email}).`
       : ''
 
-  const tone = portal.tone ?? 'semi-formal'
+  const tone = (portal.tone ?? 'semi-formal').toLowerCase()
   const toneInstruction = TONE_INSTRUCTIONS[tone] ?? TONE_INSTRUCTIONS['semi-formal']
 
   const extraSection = portal.extra_instructions?.trim()
